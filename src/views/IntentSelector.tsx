@@ -45,11 +45,10 @@ const IntentSelector: React.FC = () => {
         themeColor: '#00FBFF' // Cyan Neón para Invitados
       });
     }
-    // Navegación al setup de la sesión
     navigate('/views/SessionSetup');
   };
 
-  // 🛡️ BYPASS AUTOMÁTICO: Si ya detectamos rol admin en el contexto, saltamos.
+  // 🛡️ BYPASS AUTOMÁTICO
   useEffect(() => {
     if (settings?.role === 'admin' && !showKeyInput) {
       logger.info("AUTH", "Bypass activo: Nodo Maestro reconocido.");
@@ -59,7 +58,6 @@ const IntentSelector: React.FC = () => {
 
   /**
    * 🔐 VALIDACIÓN DE LLAVE
-   * Compara contra MASTER_KEY u osos y la llave dinámica generada en el Gate.
    */
   const handleKeyAuth = async () => {
     const input = accessKey.toLowerCase().trim();
@@ -68,7 +66,6 @@ const IntentSelector: React.FC = () => {
     setIsVerifying(true);
     setError(false);
 
-    // Efecto de procesamiento visual
     await new Promise(resolve => setTimeout(resolve, 800));
 
     if (input === MASTER_KEY) {
@@ -88,10 +85,10 @@ const IntentSelector: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 md:p-10 font-sans italic select-none">
       
-      {/* LOGO & PROTOCOLO */}
+      {/* LOGO & PROTOCOLO | FIX: Ruta corregida según carpeta /public */}
       <div className="mb-12 flex flex-col items-center gap-6">
           <img 
-            src="/logo.png" 
+            src="/logo_mencional.png" 
             alt="Mencional" 
             className="w-44 h-auto drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]" 
           />
@@ -103,7 +100,6 @@ const IntentSelector: React.FC = () => {
       {!showKeyInput ? (
         <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl animate-in fade-in zoom-in duration-500">
           
-          {/* BOTÓN: CLASE MUESTRA */}
           <button 
             onClick={() => setShowKeyInput(true)}
             className="group flex-1 h-96 border-2 border-zinc-900 rounded-[40px] flex flex-col items-center justify-center gap-6 hover:border-[#39FF14] transition-all bg-zinc-950/20 active:scale-95"
@@ -115,7 +111,6 @@ const IntentSelector: React.FC = () => {
             </div>
           </button>
 
-          {/* BOTÓN: SESIÓN PRO ($90 MXN) */}
           <button 
             onClick={() => window.location.href = "https://mpago.la/1isA1oL"}
             className="group flex-1 h-96 border-2 border-zinc-900 rounded-[40px] flex flex-col items-center justify-center gap-6 hover:border-[#00FBFF] transition-all bg-zinc-950/20 active:scale-95"
@@ -128,14 +123,13 @@ const IntentSelector: React.FC = () => {
           </button>
         </div>
       ) : (
-        /* INTERFAZ DE VALIDACIÓN */
         <div className="flex flex-col items-center gap-12 w-full max-w-md animate-in slide-in-from-bottom-8 duration-300">
           <div className="relative w-full">
             <input 
               autoFocus
               disabled={isVerifying}
               type="text"
-              placeholder="LLAVE_DE_ACCESO"
+              placeholder="LLAVE_IA"
               value={accessKey}
               onChange={(e) => setAccessKey(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleKeyAuth()}
@@ -166,7 +160,6 @@ const IntentSelector: React.FC = () => {
         </div>
       )}
 
-      {/* FOOTER OLED */}
       <footer className="fixed bottom-10 flex flex-col items-center gap-2 opacity-10">
         <p className="text-white text-[7px] tracking-[1em] font-black uppercase">Mencional_Security_Protocol_v2.6</p>
       </footer>
