@@ -1,7 +1,8 @@
 /** 🎭 MENCIONAL | INTENT_SELECTOR v2026.PROD
  * Ubicación: /src/views/IntentSelector.tsx
  * ✅ FIX: Bypass automático para Nodo Maestro (Admin).
- * ✅ PRECIO: Actualizado a $90 MXN según protocolo de recaudación.
+ * ✅ PRECIO: Actualizado a $90 MXN (Mercado Pago).
+ * ✅ TIEMPO: 30 Minutos para Sesión de Muestra.
  */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -20,103 +21,106 @@ const IntentSelector: React.FC = () => {
   const [error, setError] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
-  // 🛡️ BYPASS AUTOMÁTICO: Si ya es Admin, saltamos la aduana sin preguntar.
-  useEffect(() => {
-    if (settings?.role === 'admin' || settings?.isUnlimited) {
-      logger.info("AUTH", "Bypass detectado: Nodo Maestro activo.");
-      executeAccess('ADMIN');
-    }
-  }, [settings?.role, settings?.isUnlimited]);
-
   /**
    * 🚀 EJECUCIÓN DE ACCESO
-   * Configura los parámetros de sesión según el nivel de privilegios.
+   * Sincroniza el rol y los privilegios en el SettingsContext.
    */
   const executeAccess = (type: 'ADMIN' | 'GUEST') => {
     if (type === 'ADMIN') {
       updateSettings({
         role: 'admin',
-        userAlias: settings.userAlias || 'NODO_MAESTRO',
+        userAlias: 'NODO_MAESTRO',
         isPaid: true,
         isUnlimited: true,
-        sessionTimeLeft: 999999, // Tiempo infinito para Admin
-        themeColor: '#39FF14'
+        sessionTimeLeft: 999999,
+        themeColor: '#39FF14' // Verde Neón para Admin
       });
     } else {
       updateSettings({
         role: 'participant',
-        userAlias: 'INVITADO_MUESTRA',
+        userAlias: 'INVITADO_VIP',
         isPaid: true, 
         isUnlimited: false,
-        sessionTimeLeft: 1800, // 30 minutos de prueba
-        themeColor: '#00FBFF'
+        sessionTimeLeft: 1800, // 30 minutos de inmersión
+        themeColor: '#00FBFF' // Cyan Neón para Invitados
       });
     }
-    // Redirección al selector de configuración de sesión
-    navigate('/selector');
+    // Navegación al setup de la sesión
+    navigate('/views/SessionSetup');
   };
 
+  // 🛡️ BYPASS AUTOMÁTICO: Si ya detectamos rol admin en el contexto, saltamos.
+  useEffect(() => {
+    if (settings?.role === 'admin' && !showKeyInput) {
+      logger.info("AUTH", "Bypass activo: Nodo Maestro reconocido.");
+      executeAccess('ADMIN');
+    }
+  }, [settings?.role]);
+
   /**
-   * 🛡️ VALIDACIÓN DE LLAVE DINÁMICA
+   * 🔐 VALIDACIÓN DE LLAVE
+   * Compara contra MASTER_KEY u osos y la llave dinámica generada en el Gate.
    */
   const handleKeyAuth = async () => {
     const input = accessKey.toLowerCase().trim();
-    const GUEST_KEY = settings?.generatedGuestKey || "2026";
+    const dynamicKey = settings?.generatedGuestKey;
     
     setIsVerifying(true);
     setError(false);
 
-    // Simulamos un delay de "procesamiento neural" para la estética
+    // Efecto de procesamiento visual
     await new Promise(resolve => setTimeout(resolve, 800));
 
     if (input === MASTER_KEY) {
       executeAccess('ADMIN');
     } 
-    else if (input === GUEST_KEY.toString()) {
+    else if (dynamicKey && input === dynamicKey.toString()) {
       executeAccess('GUEST');
     } 
     else {
       setError(true);
       setIsVerifying(false);
-      setTimeout(() => setError(false), 2000);
+      setTimeout(() => setError(false), 1500);
       setAccessKey('');
     }
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 md:p-10 font-sans italic selection:bg-[#39FF14] selection:text-black">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 md:p-10 font-sans italic select-none">
       
-      {/* HEADER OLED */}
-      <div className="mb-16 flex flex-col items-center gap-4">
-         <div className="w-20 h-20 bg-zinc-900/50 rounded-full flex items-center justify-center border border-zinc-800 shadow-[0_0_40px_rgba(255,255,255,0.05)]">
-            <ShieldCheck size={40} className="text-zinc-700" />
-         </div>
-         <h2 className="text-zinc-500 text-[9px] tracking-[1.2em] uppercase font-black italic">
-           Security_Gateway_v2.6
-         </h2>
+      {/* LOGO & PROTOCOLO */}
+      <div className="mb-12 flex flex-col items-center gap-6">
+          <img 
+            src="/logo.png" 
+            alt="Mencional" 
+            className="w-44 h-auto drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]" 
+          />
+          <h2 className="text-zinc-800 text-[9px] tracking-[1.2em] uppercase font-[1000] italic">
+            Definir_Tipo_De_Acceso_AI/
+          </h2>
       </div>
 
       {!showKeyInput ? (
-        <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl">
+        <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl animate-in fade-in zoom-in duration-500">
           
-          {/* BOTÓN: CLASE MUESTRA (Acceso por Llave) */}
+          {/* BOTÓN: CLASE MUESTRA */}
           <button 
             onClick={() => setShowKeyInput(true)}
-            className="group flex-1 h-96 border-2 border-zinc-900 rounded-[3rem] flex flex-col items-center justify-center gap-6 hover:border-[#39FF14] transition-all bg-zinc-950/20 active:scale-95"
+            className="group flex-1 h-96 border-2 border-zinc-900 rounded-[40px] flex flex-col items-center justify-center gap-6 hover:border-[#39FF14] transition-all bg-zinc-950/20 active:scale-95"
           >
-            <Star size={56} className="text-zinc-800 group-hover:text-[#39FF14] transition-all drop-shadow-[0_0_20px_rgba(57,255,20,0.2)]" />
+            <Star size={56} className="text-zinc-900 group-hover:text-[#39FF14] transition-all" />
             <div className="text-center">
                 <span className="text-white font-[1000] uppercase text-2xl tracking-tighter block">Clase_Muestra</span>
-                <p className="text-[8px] text-zinc-600 tracking-[0.4em] uppercase font-black mt-2">Validación_Llave_Digital</p>
+                <p className="text-[8px] text-zinc-700 tracking-[0.4em] uppercase font-black mt-2">Validación_Llave_Digital</p>
             </div>
           </button>
 
-          {/* BOTÓN: SESIÓN PRO (Mercado Pago $90 MXN) */}
+          {/* BOTÓN: SESIÓN PRO ($90 MXN) */}
           <button 
             onClick={() => window.location.href = "https://mpago.la/1isA1oL"}
-            className="group flex-1 h-96 border-2 border-zinc-900 rounded-[3rem] flex flex-col items-center justify-center gap-6 hover:border-[#00FBFF] transition-all bg-zinc-950/20 active:scale-95 shadow-[0_0_50px_rgba(0,0,0,1)]"
+            className="group flex-1 h-96 border-2 border-zinc-900 rounded-[40px] flex flex-col items-center justify-center gap-6 hover:border-[#00FBFF] transition-all bg-zinc-950/20 active:scale-95"
           >
-            <Zap size={56} className="text-zinc-800 group-hover:text-[#00FBFF] transition-all drop-shadow-[0_0_20px_rgba(0,251,255,0.2)]" />
+            <Zap size={56} className="text-zinc-900 group-hover:text-[#00FBFF] transition-all" />
             <div className="text-center">
                 <span className="text-white font-[1000] uppercase text-2xl tracking-tighter block">Sesión_Full</span>
                 <p className="text-[8px] text-[#00FBFF] tracking-[0.4em] uppercase font-black mt-2">Acceso_Inmediato_$90_MXN</p>
@@ -124,38 +128,36 @@ const IntentSelector: React.FC = () => {
           </button>
         </div>
       ) : (
-        /* ADUANA DE LLAVE */
-        <div className="flex flex-col items-center gap-10 w-full max-w-md animate-in fade-in slide-in-from-bottom-4">
-          <div className="relative">
+        /* INTERFAZ DE VALIDACIÓN */
+        <div className="flex flex-col items-center gap-12 w-full max-w-md animate-in slide-in-from-bottom-8 duration-300">
+          <div className="relative w-full">
             <input 
               autoFocus
               disabled={isVerifying}
               type="text"
-              placeholder="LLAVE_AI"
+              placeholder="LLAVE_DE_ACCESO"
               value={accessKey}
               onChange={(e) => setAccessKey(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleKeyAuth()}
-              className={`bg-transparent border-b-2 ${error ? 'border-rose-600' : 'border-zinc-800 focus:border-[#39FF14]'} text-[#39FF14] text-center text-6xl outline-none p-6 w-full transition-all font-[1000] tracking-widest placeholder:text-zinc-900`}
+              className={`bg-transparent border-b-2 ${error ? 'border-red-600' : 'border-zinc-900 focus:border-[#39FF14]'} text-[#39FF14] text-center text-5xl outline-none p-6 w-full transition-all font-[1000] tracking-tighter placeholder:text-zinc-900 uppercase`}
             />
             {isVerifying && (
                 <Loader2 className="absolute right-0 bottom-8 animate-spin text-[#39FF14]" size={24} />
             )}
           </div>
 
-          <div className="flex flex-col items-center gap-6">
-            {error && <span className="text-rose-600 text-[10px] font-black tracking-widest uppercase animate-bounce">Credenciales_Invalidas</span>}
-            
+          <div className="flex flex-col items-center gap-8">
             <div className="flex gap-12 items-center">
               <button 
                 onClick={() => setShowKeyInput(false)} 
-                className="text-zinc-600 hover:text-white text-[9px] font-black flex items-center gap-2 transition-colors uppercase tracking-widest"
+                className="text-zinc-700 hover:text-white text-[10px] font-black flex items-center gap-2 transition-colors uppercase tracking-widest"
               >
                 <ArrowLeft size={14} /> Regresar
               </button>
               <button 
                 onClick={handleKeyAuth} 
                 disabled={isVerifying || !accessKey}
-                className="bg-[#39FF14] text-black font-[1000] px-10 py-4 rounded-2xl hover:scale-105 transition-all text-[11px] tracking-widest uppercase disabled:opacity-20"
+                className="bg-[#39FF14] text-black font-[1000] px-10 py-4 rounded-full hover:scale-105 transition-all text-[11px] tracking-widest uppercase disabled:opacity-10"
               >
                 Validar_Nodo
               </button>
@@ -164,10 +166,9 @@ const IntentSelector: React.FC = () => {
         </div>
       )}
 
-      {/* FOOTER DE PROTOCOLO */}
+      {/* FOOTER OLED */}
       <footer className="fixed bottom-10 flex flex-col items-center gap-2 opacity-10">
-        <p className="text-white text-[7px] tracking-[1em] font-black uppercase">Mencional_Master_Access_v2.6_OLED</p>
-        <p className="text-white text-[6px] tracking-[0.5em] font-black uppercase">Encrypted_by_SecurityEngine</p>
+        <p className="text-white text-[7px] tracking-[1em] font-black uppercase">Mencional_Security_Protocol_v2.6</p>
       </footer>
     </div>
   );
