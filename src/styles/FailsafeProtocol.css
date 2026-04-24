@@ -1,0 +1,165 @@
+/**
+ * 🚨 FAILSAFE_PROTOCOL SYSTEM v2026.PROD
+ * Interfaz de emergencia para pérdida de sincronía o expiración de tiempo.
+ * Estética: Emergency Red / Alert High-Contrast / Ultra-Mencional.
+ * Ubicación: /src/styles/FailsafeProtocol.css
+ * ✅ SINCRONIZADO: Protocolos de fallo para el directorio /services/ai/
+ */
+
+/* --- 🔴 CONTENEDOR MAESTRO DE ALERTA --- */
+.failsafe-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.98); /* Negro absoluto OLED para ahorro de energía */
+  backdrop-filter: blur(40px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: failsafe-entry 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+@keyframes failsafe-entry {
+  from { opacity: 0; transform: translateY(20px) scale(1.05); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* --- ⚠️ TARJETA DE PROTOCOLO CRÍTICO --- */
+.failsafe-card {
+  max-width: 480px;
+  width: 100%;
+  background: linear-gradient(145deg, #120000, #000000);
+  border: 1px solid #ff0033; /* Rojo Alerta Mencional */
+  border-radius: 40px;
+  padding: 48px;
+  text-align: center;
+  box-shadow: 0 0 80px rgba(255, 0, 51, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- 🚨 HAZARD STRIPES (Identidad Visual de Alerta) --- */
+.hazard-stripe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 6px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #ff0033,
+    #ff0033 12px,
+    #000 12px,
+    #000 24px
+  );
+}
+
+/* --- ⏱️ SINCRONIZACIÓN DE TIEMPO (Protocolo $20 MXN / 20 Minutos) --- */
+.sync-time-block {
+  font-family: 'Inter', sans-serif;
+  color: #FBBF24; /* Neon Yellow para atención inmediata */
+  font-weight: 900;
+  font-size: 1.1rem;
+  margin: 20px 0;
+  padding: 12px;
+  background: rgba(251, 191, 36, 0.05);
+  border: 1px dashed rgba(251, 191, 36, 0.3);
+  border-radius: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* --- 🎙️ MODO INTÉRPRETE: JERARQUÍA FAILSAFE (Carpeta /ai/) --- */
+.interpreter-failsafe-large {
+  font-size: 32px;
+  font-weight: 1000;
+  color: #ffffff;
+  margin-bottom: 8px;
+  font-style: italic;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.interpreter-failsafe-small {
+  font-size: 14px;
+  color: #AD00FF; /* Púrpura oficial del Modo Intérprete */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+/* --- 🎧 CICLO DE AUDIO: SÍNTESIS 2X (Protocolo 19 Segundos) --- */
+.audio-cycle-progress {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  margin-top: 24px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.audio-cycle-bar {
+  height: 100%;
+  background: #00FBFF; /* Cian Eléctrico Mencional */
+  box-shadow: 0 0 15px #00FBFF;
+  animation: cycle-19s 19s linear infinite; /* Ciclo estricto v2026.12 */
+}
+
+@keyframes cycle-19s {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* --- 🔒 ACCESO NODO MAESTRO (ADMIN BYPASS: 'osos') --- */
+.admin-failsafe-input {
+  background: #000;
+  border: 1px solid #ff0033;
+  color: #ff0033;
+  padding: 16px;
+  border-radius: 18px;
+  text-align: center;
+  width: 160px;
+  margin: 20px auto;
+  display: block;
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: 0.4em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-failsafe-input:focus {
+  outline: none;
+  box-shadow: 0 0 30px rgba(255, 0, 51, 0.4);
+  transform: scale(1.05);
+}
+
+/* --- 💳 ACCIÓN CRÍTICA (RENOVACIÓN MERCADO PAGO $20 MXN) --- */
+.btn-failsafe-action {
+  width: 100%;
+  background: #ff0033;
+  color: #ffffff;
+  padding: 20px;
+  border-radius: 20px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  border: none;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  box-shadow: 0 10px 40px rgba(255, 0, 51, 0.2);
+}
+
+.btn-failsafe-action:hover {
+  background: #00FBFF;
+  color: #000;
+  transform: translateY(-4px);
+  box-shadow: 0 15px 50px rgba(0, 251, 255, 0.3);
+}
+
+/* --- 🏮 EMERGENCIA PARPADEANTE --- */
+.failsafe-active {
+  animation: emergency-blink 1s infinite ease-in-out;
+}
+
+@keyframes emergency-blink {
+  0%, 100% { border-color: #ff0033; box-shadow: 0 0 20px rgba(255, 0, 51, 0.2); }
+  50% { border-color: #ff5e7e; box-shadow: 0 0 50px rgba(255, 0, 51, 0.5); }
+}

@@ -1,0 +1,221 @@
+En modo aprendizaje la app se llama Digo Mencional  y en modo interprete Ultra Mencional,Modo oscuro desde el principio y en el mismo archivo index.html.
+El tamaño del reloj/temporizador discreto, mostrando el tiempo actual sin distraer al usuario. Su tamaño reducido y opacidad moderada lo hacen útil pero no invasivo.
+
+Mencional es una aplicación web diseñada para facilitar conversaciones en distintos niveles de idioma, optimizada para aprendizaje y práctica conversacional.
+
+En su modalidad Ultra Mencional, se activa el modo intérprete con una interfaz 
+
+Interacciones anónimas
+Cada sesión se realiza bajo un ID de usuario anónimo, generado aleatoriamente y renovado en cada inicio de sesión. Esto garantiza privacidad y previene el acoso o seguimiento entre usuarios.
+
+📅 Gestión de sesiones
+El usuario tiene acceso a opciones para organizar su participación:
+
+Ver sesiones próximas con usuarios ya registrados.
+
+Solicitar ser considerado para una sesión futura.
+
+Agendar su propio horario (diario o semanal), con opción de pago anticipado para reservar su espacio.
+
+- Desde el inicio, debe mostrarse si hay usuarios disponibles para conversar.
+- Se recomienda incluir una **pantalla inicial de configuración** donde el usuario pueda elegir:
+  - Su **nivel de idioma**.
+  - El **tema de conversación**.
+  - Las **frases trend** relacionadas con ese tema, mostradas en grande y actualizadas dinámicamente (estilo top ten).
+- Al seleccionar un tema, deben aparecer frases sugeridas relevantes, no genéricas ni aleatorias.
+- Debe existir una opción para:
+  - Ver si hay sesiones próximas con usuarios ya registrados.
+  - Solicitar ser considerado para una sesión futura.
+  - Agendar su propio horario (diario o semanal), con pago anticipado para reservar.
+
+En Mencional, los usuarios pueden acceder a sesiones de conversación y traducción en tiempo real bajo un entorno seguro, sin exposición pública ni interacción basada en popularidad.
+
+💳 Opciones de pago
+Al momento de agendar una sesión, se les presentará:
+
+Un link de pago digital para realizar la reserva.
+
+O bien, la opción de pago en efectivo, si la plataforma lo permite en su región.
+ 
+Frases Trend automáticas
+La app detecta de forma automática qué frases o palabras se pronuncian con mayor frecuencia en las sesiones. Estas se colocan como Trend al inicio, sin necesidad de interacción manual. Esto permite que el contenido relevante emerja de forma orgánica.
+En la app nadie va a votar ni dar likes simplemente si la propia app detecta que tales frases o palabras se pronuncian más lo pondrá como Trend al principio
+
+Al principio pueden elegir el nivel, si ven un tema de los Trend que le llame la atención puede elegir esas opciones o elegir la opción tema libre y también 🧭 Elección de nivel y tema
+Al comenzar, el usuario puede:
+
+Elegir su nivel de idioma (básico, intermedio, avanzado).
+
+Seleccionar un tema de los Trend si alguno le llama la atención.
+
+Optar por un tema libre si prefiere explorar sin guía.
+
+uncionamiento inicial
+El primer participante, por ejemplo, podría decir únicamente “Hello!” y “Goodbye” porque no sabe inglés. Estas palabras se guardan automáticamente. ## 🎨 Estética y Dinámica de la Sesión
+
+- Las frases tipo acordeón estilo karaoke deben **cambiar durante la sesión**, lo cual aumenta la interacción. Si el participante opta por no pronunciar las frases sugeridas no afectará y se traducirán solo las palabras que pronunció pero las frases sugeridas seguirán apareciendo .Se tienen que ver en la misma pantalla de donde se esta viendo la traducción de las frases pero un poco más pequeño 
+- Las frases deben:
+  - Cambiar cada **20 segundos**.
+  - Ser **útiles y relevantes** al tema detectado.
+  - Aparecer en **español**, y sólo si son pronunciadas se verá su traducción al inglés visible en la pantalla principal.
+  - Tener **tamaño grande**, en **negritas**, y usar el mismo color que el reloj (que debe ser más discreto).
+- Las frases sugeridas deben tener formato tipo anuncio, pero con contenido funcional.
+Si las ponuncia el participante se considerará parte del trend al inicio y Estas partes deben ser automaticas para que sea modo manos libres tes decir, que el participante no tenga que escribir o tener que tocar botones
+- Las tarjetas informativas deben mostrarse en una sola línea horizontal, no en forma de torre.
+- Durante la sesión, se otorgarán **5 minutos de cortesía** para que los participantes se acomoden antes de iniciar la conversación.
+- El sistema debe evitar efectos visuales molestos como el parpadeo de letras grandes.
+
+ la idea es de que la app inicie desde cero, es decir, que poco a poco se vaya nutriendo, por ejemplo: empiezo con el primer participante, él sólo va a decir Hola! y Goodbye porque no sabe inglés pero justo esas dos palabras se van a guardar y con el siguiente participante si es más platicador junto con el otro participante van a ir viendo sus respuestas en la pantalla traducidas al instante gracias a una api de uso libre que traduce inglés y francés o italiano por ejemplo aunque el principal objetivo es de que aprendan inglés y los otros idiomas serían el plus, Se les va a proponer los temas pero se les va a ofrecer principalmente a especialistas de la salud para que aprendan inglés. Yo por ejemplo que no sé nada del tema medico quisiera que ellos mismos con sus pláticas vayan nutriendo la app con frases y  con los siguientes participantes vayan viendo las palabras que los anteriores participantes dejaron y con una palomita van a ir ellos mismos diciendo si esas frases o palabras les fueron de utilidad. 
+
+ los pagos se harían por mercado libre.
+
+El siguiente participante, si es más conversador, podrá ver en pantalla las respuestas traducidas al instante gracias a una API de uso libre que traduce inglés y francés. Aunque el enfoque principal es el inglés, otros idiomas serán un valor añadido.
+
+Enriquecimiento colaborativo
+Los temas de conversación serán propuestos por la app, pero estarán dirigidos principalmente a especialistas de la salud.
+
+Como creador, sin conocimientos médicos, se busca que los propios participantes enriquezcan la app con frases útiles en su campo.
+
+Las frases y palabras que se vayan generando quedarán disponibles para los siguientes usuarios
+
+Traducción dinámica
+El traductor se detendrá cada 6 segundos, aunque el participante siga hablando, obligándolo a escuchar sus propias palabras traducidas en el idioma elegido. pero traducidas en el idioma que eligió.  Las frases y palabras aparte del proyector principal donde aparecen sus palabras que dice aparecerían como tipo anuncios durante la conversación para ir apoyando, un poco más pequeño que la traducción principal para que la traducción tenga mayor protagonismo
+
+
+
+El modo interprete ⏸️
+
+ esa opción es distinta al modo aprendizaje y es más cara y esta disponible solo para pagos de múltiplos de 30 minutos $50 cada 30 minutos pero desde el inicio pueden elegir esta opción donde el participante va a ir eligiendo la velocidad de la traducción dentro de la conferencia, puede ser a velocidad normal cada 19 segundos o puede elegir 2x  sintetizado  para el doble de velocidad pero sintetizado , al final de la conferencia puede guardar la traducción en pdf pero hasta el final de la sesión para enviarlo al solicitante. 
+
+Si se elige el modo interprete 
+no se verán las tendencias como sugerencias porque se entiende que quiere solo escuchar lo que se esta diciendo en la conferencia aunque también lo pueden utilizar para escuchar su podcast o serie favorita traducida. Tampoco aparecerá la opción Individual, Dúo o Trío
+es una aplicación diseñada para facilitar el aprendizaje de idiomas, especialmente inglés, enfocada en profesionales del área de la salud. La app no incluirá videos; en su lugar, mostrará frases y palabras tipo anuncios que irán apareciendo conforme avance el proyecto. La idea es que la app comience desde cero y se nutra progresivamente con el uso de los participantes.
+
+En modo interprete no aparecerán las opciones ⚠️ Tarjeta Amarilla ❌ Expulsar Usuario 🚨 Reportar 
+tampoco puede 🚪 Cambiar Sala / Unirse a otra ni se mostra  Usuarios disponibles para conversar ya que es para uso personal. Tampoco se mostrará el nivel
+Sí puede pausar la sesión o salir 
+
+
+F
+
+
+## 🎁 Créditos y Recompensas
+Se le otorgarán 5 minutos de regalo adicional al anterior por haber ayudado a otros participantes a tener un acompañante en su sesión
+- El saldo de créditos será **privado y visible solo para el usuario**.
+- Se podrá usar para:
+  - Extender sesiones.
+  - Regalar tiempo a otros participantes.
+- El sistema debe permitir acumular créditos por participación activa o por agendar sesiones anticipadas.
+
+---
+
+## ⚠️ Tarjeta Amarilla y Expulsión
+
+- El **Anfitrión** puede emitir una **Tarjeta Amarilla** como único aviso formal antes de expulsar a un participante por conducta inapropiada.
+- Si el comportamiento persiste, el Anfitrión puede **expulsar al usuario** de la sesión.
+- El usuario expulsado podrá unirse a otra sesión **si no ha sido bloqueado globalmente**.
+
+---
+
+## 🚨 Reportes y Bloqueo Global
+
+- **Cualquier usuario** puede reportar a otro participante, incluyendo al Anfitrión.
+- También se puede reportar por **inacción del Anfitrión**, si no modera adecuadamente.
+- Al acumular **3 reportes válidos**, se activa el **Bloqueo Global**, restringiendo el acceso del usuario a nuevas sesiones.
+- Los usuarios bloqueados tendrán **derecho a disputa**, pudiendo presentar una explicación para revisión del caso.
+ Las opciones deben ser: Individual- Duo o Trio y no se debe esperar para iniciar los cinco minutos corren desde que se inicia sesión y se debe mostrar ya todo el panel de la sesión (microfono, frases sugeridas, etc..)
+
+Una vez que salga de su sesión se le peguntará sobre cómo califica a los participantes de su sesión si por alguna razón indica que fue negativa con algún participante ya no se le mostrará como sugerencia en las próximas sesiones
+
+Además de aparecer en el proyector principal, las frases y palabras también se mostrarán como anuncios durante la conversación para reforzar el aprendizaje.
+
+Modo intérprete
+Dentro de la app habrá una opción de intérprete en conferencias, también va a tener el micofono abierto para escuchar la conferencia  donde el participante podrá elegir la velocidad de traducción:
+
+Velocidad normal con síntesis cada 19 segundos.
+
+Velocidad 2x sin síntesis, para traducción más rápida.
+
+Al finalizar la conferencia, se podrá guardar la traducción en formato PDF para enviarla al solicitante.
+
+Pagos
+Los pagos por el uso de la app o servicios adicionales se realizarán a través de Mercado Libre.
+
+
+Botones Pequeños  el padding de los botones principales (Invitar/Unirse y Pagar El temas del día  y que se vea que va cambiando dependiendo la relevancia del día y que se le pueda dar click como elección de ese tema para la sesión, incluir la lupita para encontrar un tema en especifico
+## 🧭 Inicio de Sesión y Selección de Tema
+
+
+
+---
+
+## 🎙️ Comportamiento del Micrófono
+
+- El micrófono debe activarse automáticamente **solo cuando el usuario hable **
+Van a ir apareciendo las frases estilo karaoke pero el usuario se le va a indicar si quiere repetir esas frases o decidir decir algo de su ingenio si decide decir la frase sugerida se tomará como útil y se mostrará al inicio de la app como trend dentro de ese tema
+
+- Si otro participante interrumpe con algo relevante, el sistema debe permitirlo.
+
+Sí, va muy bien, el acordeón sería en el idioma natal o el que eligió en un principio el participante ya que en la pantalla principal se va a ver su traducción en grande, sería por ejemplo una charla completa en español pero no sería interminable, es decir, cada participante tiene que pronunciar sus frases, preguntas o respuestas en 6 segundos y automáticamente vera su traducción en pantalla se repetirá sus frases o palabras dos veces además de que también las escuchará 2 veces  antes de seguir con el siguiente participante en el idioma seleccionado para practicar además escuchará cómo se pronuncia y sería por turnos aunque si algún participante interrumpe se verá también su traducción en pantalla, esto es para que se preste atención a lo que cada participante dice y no se quede hablando solo una persona por ejemplo durante 20 minutos y deje que se traduzca sin prestar atención a lo que dijo. - Se deben omitir automáticamente  frases sin aporte como: “ok”, “yo sigo”, “perfecto”, “vaya”, etc.Y cambiará de color la app si es mi turno por ejemplo
+
+---
+
+## 🎛️ Comportamiento Técnico y Visual
+
+- El diseño debe mantener el **modo oscuro** desde el inicio.
+- El **logo de Digo** debe estar visible en la pantalla principal.
+- Los **temas de conversación** cambiarán dinámicamente en función de los que se vuelvan tendencia.
+- Las sesiones se estructuran en **múltiplos de 20 minutos** (20, 40, 60).
+- El **micrófono se activará automáticamente** al detectar que el usuario habla, o alguien más le ayuda pero con algo útil dentro del contexto permitiendo una experiencia completamente manos libres.
+- Las **frases tipo acordeón** deben:
+  - Ser más pequeñas, estilo anuncio.
+  - Contener **palabras y frases útiles**, no genéricas.
+  - Mantener una estética con **colores discretos**.
+  - Cambiar las frases estilo karaoke pero no es obligatorio que las digan es solo de apoyo y si las pronuncian automáticamente se vuelven trend al inicio si se pronuncian mucho o son útiles en las conversaciones cada **20 segundos** según el tema detectado.
+- Al inicio debe aparecer una **invitación destacada** para que el usuario explore la sección “Top de la semana”, con las frases más votadas y más utilizadas.
+- Esta sección también debe conservar el **modo oscuro** y estar integrada visualmente con el resto de la interfaz.
+Aquí tienes una redacción clara y completa para esa funcionalidad dentro de la app **Mencional**:
+
+---
+
+## ⏸️ Flexibilidad durante la sesión
+
+En **Mencional**, entendemos que pueden surgir imprevistos. Por eso, cada participante tiene la opción de:
+
+- **Salir temporalmente de la sesión** si necesita atender alguna tarea urgente fuera del entorno de conversación.
+- **Pausar su sesión**, conservando el tiempo restante para retomarla más adelante.
+- **Unirse a otra aula** con el tiempo que le quede, si desea cambiar de tema o grupo.
+- **Extender su sesión** realizando un pago adicional, lo que le permite continuar sin interrupciones si así lo desea.
+
+Esta flexibilidad garantiza que el usuario mantenga el control de su tiempo y experiencia, adaptándose a sus necesidades reales sin perder el progreso ni la inversión realizada.
+## 📜 Términos y Condiciones de Uso del Servicio
+
+
+Al acceder o utilizar la aplicación de Conversación Manos Libres (en adelante, "la App"), usted acepta quedar legalmente vinculado por los presentes Términos y Condiciones. Este servicio está dirigido exclusivamente a usuarios adultos (+18 años).
+
+### I. Cuentas y Uso
+
+**1. Requisito de Edad y Propósito**
+- La App es una herramienta de conversación para adultos. El usuario declara y garantiza que tiene al menos 18 años de edad.
+- Está diseñada para la práctica de conversación y el intercambio de ideas de forma respetuosa y enfocada en temas predefinidos.
+
+**2. Privacidad y Datos**
+- Las interacciones se realizan bajo un ID de usuario anónimo.
+- No se comparten datos personales ni de contacto de forma automática entre participantes.
+- El saldo de crédito de recompensa es privado y solo el usuario puede visualizar su estado y el historial de acumulación.
+
+
+**3. Duración y Pagos**
+- Las sesiones se pagan por su duración inicial (ej. 20, 40 o 60 minutos).
+- La duración máxima pagada por sesión es de 60 minutos.
+- El usuario puede extender la sesión mediante pago adicional o uso de su crédito acumulado.
+
+**4. Sistema de Crédito de Recompensa**
+- Los usuarios reciben 5 minutos de crédito al unirse a una sesión pública para animarlos a unirse con otras personas
+- El crédito puede acumularse hasta un máximo de 20 minutos.
+- Puede usarse para extender la sesión o regalarse a otro participante.
+- Para reactivar la acumulación tras su uso, se requiere un pago simbólico .
+
+
+- Se prohíben ofensas sin contexto, acoso, discriminación y cualquier práctica inapropiada
+

@@ -1,0 +1,173 @@
+/**
+ * 🖼️ APP_CORE_STYLING v2026.PROD - MENCIONAL
+ * Control de branding centralizado y flujo de navegación OLED.
+ * Ubicación: /src/App.css
+ * ✅ SINCRONIZADO: Directorio /services/ai/ activo.
+ */
+
+/* --- 1. LIMPIEZA Y PROTAGONISMO DE MARCA --- */
+
+/* Forzamos la desaparición de logos residuales (Legacy "Digo") */
+.setup-view header img, 
+.protocol-view header img {
+  display: none !important;
+}
+
+/* El logo de /public/ es el único protagonista desde el inicio */
+.central-branding-container {
+  margin-top: 5vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.mencional-logo-main {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  /* Resplandor Cian sincronizado con el motor AI */
+  filter: drop-shadow(0 0 30px rgba(0, 251, 255, 0.4));
+  animation: logoEntrance 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes logoEntrance {
+  from { opacity: 0; transform: scale(0.8) translateY(20px); filter: blur(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
+}
+
+/* --- 2. FRASES TREND (HOME / BIENVENIDA) --- */
+
+/* Contenedor de rectángulos trend en español (Sincronía AI) */
+.trends-home-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  max-width: 90%;
+  margin: 40px auto;
+}
+
+.dynamic-phrase-text {
+  font-size: 14px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  font-style: italic;
+  text-align: center;
+  margin: 20px 0;
+  letter-spacing: 0.1em;
+  /* Ciclo de color que representa los 3 estados del Nodo Maestro */
+  animation: colorCycle 8s infinite alternate ease-in-out;
+}
+
+@keyframes colorCycle {
+  0% { color: #00FBFF; }   /* Cian Mencional (Learning) */
+  50% { color: #AD00FF; }  /* Púrpura Rompehielo (Audio Activo) */
+  100% { color: #39FF14; } /* Verde Nodo Maestro (Admin / 'osos') */
+}
+
+/* --- 3. CONFIGURACIÓN DE SESIÓN (MODOS) --- */
+
+/* Estilo para los selectores Individual/Dúo/Trío */
+.session-mode-selector {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 25px 0;
+}
+
+.mode-pill {
+  padding: 12px 24px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 800;
+  font-size: 11px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mode-pill.active {
+  background: var(--mencional-cyan, #00FBFF);
+  color: #000;
+  border-color: #00FBFF;
+  box-shadow: 0 0 20px rgba(0, 251, 255, 0.3);
+}
+
+/* --- 4. PANEL DE 10 COLORES OLED --- */
+.color-grid-mencional {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.color-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s;
+}
+
+.color-dot:hover {
+  transform: scale(1.2);
+}
+
+.color-dot.selected {
+  border-color: #fff;
+  box-shadow: 0 0 15px currentColor;
+}
+
+/* --- 5. INTERFAZ DE SESIÓN ACTIVA (KARAOKE NEURAL) --- */
+
+/* Contenedor de traducción sincronizado con /services/ai/ */
+.session-audio-display {
+  position: absolute;
+  bottom: 15%;
+  width: 100%;
+  text-align: center;
+  padding: 0 30px;
+}
+
+.karaoke-bold-text {
+  font-size: clamp(24px, 5vw, 42px);
+  font-weight: 1000;
+  line-height: 1.1;
+  text-transform: uppercase;
+  /* Efecto de fijación visual x2 */
+  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2));
+  font-style: italic;
+}
+
+/* --- 6. FAILSAFE Y ALERTAS (RELOJ BLOQUE 20 MIN) --- */
+.discreet-clock {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  opacity: 0.6;
+  transition: all 0.5s ease;
+}
+
+/* Estado crítico: Activado al restar < 5 min o agotarse el bloque de $20 MXN */
+.discreet-clock.critical {
+  font-size: 24px;
+  opacity: 1;
+  color: #F43F5E; /* Rojo Rose Mencional */
+  text-shadow: 0 0 20px rgba(244, 63, 94, 0.5);
+  animation: clockPulse 1s infinite;
+}
+
+@keyframes clockPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}

@@ -1,0 +1,155 @@
+/**
+ * ⏱️ TIMEPULSE v2026.PROD - MENCIONAL
+ * Control de animaciones temporales, sincronización de ciclos y estados críticos.
+ * Ubicación: /src/styles/timePulse.css
+ */
+
+:root {
+  --pulse-critical: #F43F5E; /* Alerta de pago / Tiempo agotado (Rosa Crítico) */
+  --pulse-normal: #00FBFF;   /* Cian Mencional (Protocolo Ultra / Trends) */
+  --pulse-warning: #FBBF24;  /* Amber (Modo Aprendizaje / Turno 6s) */
+  --pulse-violet: #A855F7;   /* Púrpura (Modo Rompehielo 4s / Intérprete 19s) */
+  --pulse-success: #39FF14;  /* Verde Neón (Nodo Maestro / Pago verificado) */
+  --pulse-glass: rgba(255, 255, 255, 0.03);
+}
+
+/* 1. EFECTO DE URGENCIA CRÍTICA (Bloque 20min) 
+   Se activa cuando faltan 5 minutos o menos.
+*/
+.time-pulse-critical {
+  animation: growAndGlow 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  font-weight: 900;
+  color: var(--pulse-critical);
+  filter: drop-shadow(0 0 15px rgba(244, 63, 94, 0.6));
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+@keyframes growAndGlow {
+  0%, 100% { transform: scale(1); filter: brightness(1); opacity: 0.8; }
+  50% { transform: scale(1.15); filter: brightness(1.5); opacity: 1; }
+}
+
+/* 2. BARRA DE PROGRESO DE TURNO (Sincronizada con ciclos AI) */
+.turn-progress-container {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  border-radius: 20px;
+  position: relative;
+}
+
+.turn-progress-bar {
+  height: 100%;
+  transform-origin: left;
+  box-shadow: 0 0 15px currentcolor;
+  transition: background-color 0.3s ease;
+}
+
+/* Animaciones de duración específica según el protocolo Mencional */
+.animate-4s { 
+  animation: shrinkWidth 4s linear forwards; 
+  background: var(--pulse-violet); 
+  color: var(--pulse-violet); 
+} /* Rompehielo */
+
+.animate-6s { 
+  animation: shrinkWidth 6s linear forwards; 
+  background: var(--pulse-warning); 
+  color: var(--pulse-warning); 
+} /* Aprendizaje */
+
+.animate-19s { 
+  animation: shrinkWidth 19s linear forwards; 
+  background: var(--pulse-normal); 
+  color: var(--pulse-normal); 
+} /* Intérprete / Trends */
+
+@keyframes shrinkWidth {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* 3. EFECTO "NEURAL SCANNER" (Karaoke dinámico para fijación x2) */
+.karaoke-text {
+  background: linear-gradient(
+    90deg, 
+    rgba(255,255,255,0.2) 0%, 
+    var(--pulse-normal) 50%, 
+    rgba(255,255,255,0.2) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: neuralScan 2s linear infinite;
+  font-weight: 900;
+  font-style: italic;
+}
+
+@keyframes neuralScan {
+  to { background-position: 200% center; }
+}
+
+/* 4. MODO RESPIRACIÓN (Idle State / Espera de Voz Aoede) */
+.neural-breathing {
+  animation: breath 3s ease-in-out infinite;
+}
+
+@keyframes breath {
+  0%, 100% { opacity: 0.3; transform: scale(0.97); filter: blur(1px); }
+  50% { opacity: 0.8; transform: scale(1); filter: blur(0px); }
+}
+
+/* 5. TENDENCIAS (TREND RECTANGLES) 
+   Estilo para las frases de bienvenida en la Home.
+*/
+.trend-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 251, 255, 0.2);
+  padding: 12px 24px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.trend-pill:hover {
+  background: rgba(0, 251, 255, 0.1);
+  border-color: var(--pulse-normal);
+  transform: translateY(-3px);
+}
+
+/* 6. INDICADOR DE VOZ ACTIVA (Sensor Wave) */
+.voice-active-wave {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+}
+
+.voice-bar {
+  width: 3px;
+  background: var(--pulse-normal);
+  border-radius: 10px;
+  animation: waveActive 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes waveActive {
+  from { height: 6px; }
+  to { height: 22px; }
+}
+
+.voice-bar:nth-child(2) { animation-delay: 0.1s; background: var(--pulse-warning); }
+.voice-bar:nth-child(3) { animation-delay: 0.2s; }
+.voice-bar:nth-child(4) { animation-delay: 0.15s; background: var(--pulse-violet); }
+
+/* 7. FLASH DE CICLO COMPLETADO */
+.cycle-sync-flash {
+  animation: syncFlash 0.5s ease-out forwards;
+}
+
+@keyframes syncFlash {
+  0% { background: rgba(0, 251, 255, 0.3); }
+  100% { background: transparent; }
+}
