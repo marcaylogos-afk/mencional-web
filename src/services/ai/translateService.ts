@@ -7,7 +7,9 @@ import { sanitizeText } from '../../utils/sanitizeText';
 import { logger } from '../../utils/logger';
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+// ✅ CORRECCIÓN: URL con el modelo experimental correcto para evitar Error 404
+const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
 
 export interface GlobalTrend {
   phrase: string;
@@ -39,7 +41,8 @@ export const translateText = async (
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2500); // Latencia estricta para Radar 5s
+    // ⚡ AJUSTE: Subimos de 2.5s a 3.5s para mayor estabilidad en móvil sin perder latencia.
+    const timeoutId = setTimeout(() => controller.abort(), 3500); 
 
     const response = await fetch(
       `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&dt=ld&q=${encodeURIComponent(cleanInput)}`,
@@ -54,10 +57,7 @@ export const translateText = async (
     let translation = data?.[0]?.[0]?.[0]?.trim() || cleanInput;
 
     // 🔄 LÓGICA DE SWAP DINÁMICO (Bidireccional)
-    // Si detectamos que el usuario ya habló en inglés, forzamos traducción a español.
-    let finalTarget = target;
     if (isAutoDetect && mode !== 'ultra' && detectedSrc === 'en' && target === 'en') {
-      finalTarget = 'es';
       const retryResponse = await fetch(
         `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=es&dt=t&q=${encodeURIComponent(cleanInput)}`
       );
@@ -66,28 +66,25 @@ export const translateText = async (
     }
 
     // ✨ LIMPIEZA NEURAL DE OUTPUT
-    // Eliminamos prefijos basura generados por algunos motores o proxies
     translation = translation
       .replace(/^(translated|traducción|traducido|output|result):\s*/i, "")
-      .replace(/[\[\]{}()]/g, "") // Limpieza de caracteres técnicos para OLED
+      .replace(/[\[\]{}()]/g, "") 
       .trim();
 
     /** 🎓 PROCESAMIENTO POR MODO */
-    if (mode === 'learning') {
-      // Sincronizamos con el motor de tendencias local
-      if (cleanInput.length > 3) triggerTrendEffect(cleanInput, "LEARNING"); 
+    if (mode === 'learning' && cleanInput.length > 3) {
+      triggerTrendEffect(cleanInput, "LEARNING"); 
     } 
 
     return { 
-      translation: translation.toUpperCase(), // Forzado para estética MENCIONAL
+      translation: translation.toUpperCase(), 
       sourceLang: detectedSrc, 
-      targetLang: finalTarget 
+      targetLang: target 
     };
 
   } catch (error) {
     logger.error("TRANSLATE_FAILURE", "Fallo en motor neural.", error);
-    // Fallback seguro: devolver el texto original
-    return { translation: cleanInput, sourceLang: "auto", targetLang: "en" }; 
+    return { translation: cleanInput.toUpperCase(), sourceLang: "auto", targetLang: "en" }; 
   }
 };
 
@@ -99,7 +96,7 @@ export const getDynamicAIKeywords = async (
   lastTranscript: string, 
   targetLang: string = "en-US",
 ): Promise<string[]> => {
-  if (!lastTranscript || !GEMINI_API_KEY) return ["Keep talking", "Interesting", "Continue"]; 
+  if (!lastTranscript || !GEMINI_API_KEY) return ["KEEP TALKING", "INTERESTING", "CONTINUE"]; 
 
   try {
     const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
@@ -121,21 +118,22 @@ export const getDynamicAIKeywords = async (
       })
     });
 
+    if (!response.ok) throw new Error("GEMINI_404_OR_FAIL");
+
     const data = await response.json();
     const suggestionsText = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
     const suggestions = JSON.parse(suggestionsText);
     
     return Array.isArray(suggestions) 
       ? suggestions.map(s => s.toUpperCase()).slice(0, 3) 
-      : ["TE ESCUCHO", "Sigue", "OK"];
+      : ["TE ESCUCHO", "SIGUE", "OK"];
   } catch (error) {
-    return ["PROCESANDO...", "Sigue hablando", "ADAPTANDO_CONTEXTO"];
+    return ["PROCESANDO...", "SIGUE HABLANDO", "ADAPTANDO..."];
   }
 };
 
 /**
  * 🚀 triggerTrendEffect (Cloud de Tendencias Persistente)
- * Registra frases frecuentes para el análisis de inmersión.
  */
 export const triggerTrendEffect = (phrase: string, context: string = "GENERAL"): void => {
   if (!phrase || phrase.length < 3) return;
@@ -155,12 +153,11 @@ export const triggerTrendEffect = (phrase: string, context: string = "GENERAL"):
       trends[existingIndex].count += 1;
     }
 
-    // Ventana de tiempo: 30 minutos (Protocolo de Sesión Mencional)
     const thirtyMinsAgo = Date.now() - (30 * 60 * 1000);
     const sortedTrends = trends
       .filter(t => t.timestamp > thirtyMinsAgo)
       .sort((a, b) => b.count - a.count)
-      .slice(0, 15); // Top 15 para no saturar memoria
+      .slice(0, 15);
 
     localStorage.setItem(TREND_KEY, JSON.stringify(sortedTrends));
   } catch (err) {
