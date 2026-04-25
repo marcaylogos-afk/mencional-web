@@ -3,12 +3,20 @@
  * ✅ UPDATE: Protocolo de Radar 6s (Escucha activa extendida).
  * ✅ UPDATE: Sesión de 30 minutos (1800s).
  * ✅ UPDATE: Estética OLED Black #000000.
+ * ✅ FIX: Importación de funciones directas del SpeechService.
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Volume2, ShieldAlert, Languages, Sparkles } from 'lucide-react';
+import { Zap, Volume2, ShieldAlert, Languages } from 'lucide-react';
 
-import { speechService } from '../services/ai/speechService'; 
+// Importamos las funciones directas para evitar errores de minificación
+import { 
+  startListening, 
+  onSpeechEvent, 
+  offSpeechEvent, 
+  speakLearning, 
+  stopAllSpeech 
+} from '../services/ai/speechService'; 
 import { translateService } from '../services/ai/translateService';
 import { useSettings } from '../context/SettingsContext';
 import { logger } from '../utils/logger';
@@ -24,8 +32,7 @@ const LearningMode: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
-  // ✅ MODIFICADO: 30 minutos = 1800 segundos
-  const [timeLeft, setTimeLeft] = useState(1800); 
+  const [timeLeft, setTimeLeft] = useState(1800); // 30 Minutos
 
   const bufferRef = useRef("");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -33,7 +40,6 @@ const LearningMode: React.FC = () => {
   const suggestionTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isMounted = useRef(true);
 
-  /** 🧠 ACORDEÓN COGNITIVO: Sugerencias dinámicas */
   const fetchDynamicSuggestions = useCallback(async () => {
     try {
       const hints = await translateService.getKeywords(
@@ -46,11 +52,21 @@ const LearningMode: React.FC = () => {
     }
   }, [settings.currentTopic, settings.targetLanguage]);
 
+  const resetToListening = useCallback(() => {
+    if (!isMounted.current || timeLeft <= 0) return;
+    setDisplayPhrase("");
+    setTranscript("");
+    bufferRef.current = "";
+    setIsProcessing(false);
+    setIsAutoActive(true);
+    startSequence(); 
+  }, [timeLeft]);
+
   /** 🔄 CICLO MENCIONAL: PROTOCOLO ESPEJO x2 */
   const executeMencionalCycle = useCallback(async () => {
     const inputText = bufferRef.current.trim();
     
-    speechService.stop();
+    stopAllSpeech(); // Detenemos escucha
     setIsAutoActive(false);
 
     if (!inputText || !isMounted.current) {
@@ -67,8 +83,8 @@ const LearningMode: React.FC = () => {
       setDisplayPhrase(result.translation.toUpperCase()); 
       setIsGlowing(true);
 
-      // 🗣️ DOBLE IMPACTO (1.0x -> 0.85x)
-      await speechService.speakLearning(result.translation, result.targetLang);
+      // 🗣️ DOBLE IMPACTO (1.0x -> 0.85x) activado directamente
+      await speakLearning(result.translation, result.targetLang || 'en-US');
 
       if (isMounted.current) {
         setIsGlowing(false);
@@ -78,17 +94,7 @@ const LearningMode: React.FC = () => {
       logger.error("AI_FLOW_FAIL", "Error en flujo Mencional_Cycle", error);
       resetToListening();
     }
-  }, [settings.targetLanguage]);
-
-  const resetToListening = useCallback(() => {
-    if (!isMounted.current || timeLeft <= 0) return;
-    setDisplayPhrase("");
-    setTranscript("");
-    bufferRef.current = "";
-    setIsProcessing(false);
-    setIsAutoActive(true);
-    startSequence(); 
-  }, [timeLeft]);
+  }, [settings.targetLanguage, resetToListening]);
 
   const startSequence = useCallback(() => {
     if (isProcessing || !isMounted.current || timeLeft <= 0) return;
@@ -97,10 +103,10 @@ const LearningMode: React.FC = () => {
     setTranscript("");
     setProgress(0);
     
-    speechService.start(settings.nativeLanguage || 'es-MX');
+    // Iniciar escucha con la función directa
+    startListening(settings.nativeLanguage || 'es-MX');
 
-    // ✅ MODIFICADO: Protocolo de escucha de 6 segundos
-    const duration = 6000; 
+    const duration = 6000; // Radar de 6 segundos
     const step = 50;
     
     if (timerRef.current) clearInterval(timerRef.current);
@@ -117,13 +123,18 @@ const LearningMode: React.FC = () => {
     }, step);
   }, [isProcessing, timeLeft, executeMencionalCycle, settings.nativeLanguage]);
 
+  // Gestión de eventos de voz
   useEffect(() => {
     const handlePartial = (text: string) => {
       bufferRef.current = text;
       setTranscript(text);
     };
-    speechService.on('partial_result', handlePartial);
-    return () => speechService.off('partial_result');
+
+    onSpeechEvent('partial_result', handlePartial);
+    
+    return () => {
+      offSpeechEvent('partial_result', handlePartial);
+    };
   }, []);
 
   useEffect(() => {
@@ -131,10 +142,11 @@ const LearningMode: React.FC = () => {
     fetchDynamicSuggestions();
     
     suggestionTimerRef.current = setInterval(fetchDynamicSuggestions, 19000);
+    
     sessionTimerRef.current = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
-          speechService.stopAll();
+          stopAllSpeech();
           return 0;
         }
         return prev - 1;
@@ -146,13 +158,13 @@ const LearningMode: React.FC = () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (suggestionTimerRef.current) clearInterval(suggestionTimerRef.current);
       if (sessionTimerRef.current) clearInterval(sessionTimerRef.current);
-      speechService.stopAll(); 
+      stopAllSpeech(); 
     };
   }, [fetchDynamicSuggestions]);
 
   const handleMicToggle = () => {
     if (isAutoActive || isProcessing || timeLeft <= 0) {
-      speechService.stopAll();
+      stopAllSpeech();
       setIsAutoActive(false);
       setProgress(0);
     } else {
@@ -167,7 +179,9 @@ const LearningMode: React.FC = () => {
       {/* 🌑 CRONÓMETRO OLED */}
       <div className={`fixed top-10 right-10 font-black flex items-center gap-4 transition-all duration-700 ${timeLeft <= 180 ? 'text-6xl text-rose-600 animate-pulse' : 'text-xs opacity-40'}`} style={timeLeft > 180 ? { color: themeColor } : {}}>
         {timeLeft <= 180 && <ShieldAlert size={40} className="text-rose-600" />}
-        <span className="tabular-nums tracking-tighter">{Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}</span>
+        <span className="tabular-nums tracking-tighter">
+          {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
+        </span>
       </div>
 
       <header className="w-full mb-4 flex justify-between items-center">
@@ -178,7 +192,6 @@ const LearningMode: React.FC = () => {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center w-full max-w-6xl text-center">
-        
         <div className="mb-12 flex flex-wrap justify-center gap-3">
           <AnimatePresence>
             {!displayPhrase && suggestions.map((hint, i) => (
