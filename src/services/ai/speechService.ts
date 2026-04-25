@@ -1,172 +1,133 @@
 /** 🔊 MOTOR MENCIONAL: SPEECH SERVICE v2026.PROD 
- * ✅ SOPORTE: Dual Mode (Ultra Interpreter / Learning Mode)
- * ✅ AUDIO: Doble Impacto Auditivo (x2) | 1.0x -> 0.85x
- * ✅ CONTROL: Sincronización de ciclos Micro-Repetición
+ * ✅ FIX TOTAL: Exportación directa de funciones para evitar errores de minificación.
+ * ✅ AUDIO: Doble Impacto (1.0x -> 0.85x)
  * ✅ UBICACIÓN: /src/services/ai/speechService.ts
  */
 
-class SpeechService {
-  private recognition: any = null;
-  private listeners: { [key: string]: Function[] } = {};
-  private isListening: boolean = false;
-  private isSpeaking: boolean = false;
-  private autoRestart: boolean = false;
+let recognition: any = null;
+const listeners: { [key: string]: Function[] } = {};
+let isListening = false;
+let isSpeaking = false;
 
-  constructor() {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        this.recognition = new SpeechRecognition();
-        this.recognition.continuous = true;
-        this.recognition.interimResults = true;
+// Inicialización del motor de reconocimiento
+if (typeof window !== 'undefined') {
+  const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
 
-        this.recognition.onstart = () => { 
-          this.isListening = true;
-          this.emit('status', 'listening');
-        };
-
-        this.recognition.onend = () => { 
-          this.isListening = false;
-          this.emit('status', 'idle');
-          // Si el micro se cierra solo por tiempo muerto pero no por orden nuestra, avisar a la UI
-          this.emit('mic_closed', true);
-        };
-
-        this.recognition.onerror = (event: any) => {
-          if (event.error !== 'no-speech') {
-             console.error("%c 🔴 [AOEDE_ERROR]:", "color: #FF0055", event.error);
-             this.emit('error', event.error);
-          }
-          this.isListening = false;
-        };
-      }
-    }
-  }
-
-  /** 🎤 ESCUCHA ACTIVA (Captación Neural) */
-  public async start(lang: string = 'es-MX') {
-    if (!this.recognition) return false;
-    
-    // 🛡️ Prevenir feedback: Si Aoede está hablando, el micro NO se abre.
-    if (this.isSpeaking) return false;
-
-    // Reset limpio si ya está activo
-    if (this.isListening) {
-      this.stop();
-      await new Promise(r => setTimeout(r, 100));
-    }
-
-    this.recognition.lang = lang;
-    
-    this.recognition.onresult = (event: any) => {
-      let interim = "";
-      let final = "";
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) final += event.results[i][0].transcript;
-        else interim += event.results[i][0].transcript;
-      }
-      
-      if (interim) this.emit('partial_result', interim);
-      if (final) {
-        console.log("%c 🟢 [AOEDE_DATA]:", "color: #00FBFF", final.trim());
-        this.emit('final_result', { transcription: final.trim() });
-      }
+    recognition.onstart = () => { 
+      isListening = true; 
+      dispatch('status', 'listening'); 
     };
-
-    try {
-      this.recognition.start();
-      return true;
-    } catch (e) {
-      // Si ya está iniciado capturamos el error silenciosamente
-      return false;
-    }
-  }
-
-  /** 🗣️ PROTOCOLO AOEDE: DOBLE IMPACTO (x2)
-   * Bloquea el flujo hasta terminar la fijación fonética.
-   */
-  public async speakLearning(text: string, lang: string) {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    
-    this.isSpeaking = true;
-    this.stop(); // 🛑 SILENCIO ABSOLUTO: Matamos el micro antes de hablar
-    window.speechSynthesis.cancel();
-
-    // Selección de voz técnica (Premium/Natural si está disponible)
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(v => 
-      v.lang.includes(lang) && 
-      (v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("Neural"))
-    );
-
-    const playUtterance = (rate: number, volume: number = 1.0) => {
-      return new Promise((resolve) => {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = lang;
-        utterance.rate = rate; 
-        utterance.volume = volume;
-        if (preferredVoice) utterance.voice = preferredVoice;
-
-        utterance.onend = () => resolve(true);
-        utterance.onerror = () => resolve(true);
-        
-        window.speechSynthesis.speak(utterance);
-      });
+    recognition.onend = () => { 
+      isListening = false; 
+      dispatch('status', 'idle'); 
+      dispatch('mic_closed', true); 
     };
-
-    try {
-      // 1ª Pasada: Impacto Inicial (Velocidad Estándar)
-      await playUtterance(1.0);
-      
-      // Pausa de Absorción Táctica (750ms para procesamiento cerebral)
-      await new Promise(r => setTimeout(r, 750));
-
-      // 2ª Pasada: Fijación Fonética (Velocidad Reducida)
-      await playUtterance(0.85, 0.9); 
-    } finally {
-      this.isSpeaking = false;
-      this.emit('speaking_finished', true);
-    }
-  }
-
-  /** 🛑 DETENCIÓN DE EMERGENCIA (Hardware Release) */
-  public stop() {
-    if (this.recognition) {
-      try {
-        // .abort() es preferible a .stop() porque libera el hardware de inmediato
-        this.recognition.abort(); 
-        this.isListening = false;
-      } catch (e) {}
-    }
-  }
-
-  public stopAll() {
-    this.stop();
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      this.isSpeaking = false;
-    }
-  }
-
-  /** 🔌 EVENT ENGINE */
-  public on(event: string, cb: Function) {
-    if (!this.listeners[event]) this.listeners[event] = [];
-    this.listeners[event].push(cb);
-  }
-
-  public off(event: string, cb?: Function) {
-    if (!cb) {
-      this.listeners[event] = [];
-    } else {
-      this.listeners[event] = this.listeners[event]?.filter(l => l !== cb);
-    }
-  }
-
-  private emit(event: string, data: any) {
-    this.listeners[event]?.forEach(cb => cb(data));
+    recognition.onerror = (event: any) => { 
+      if (event.error !== 'no-speech') dispatch('error', event.error); 
+      isListening = false; 
+    };
   }
 }
 
-// Singleton para toda la App Mencional
-export const speechService = new SpeechService();
-export default speechService;
+function dispatch(event: string, data: any) {
+  listeners[event]?.forEach(cb => cb(data));
+}
+
+/** 🎤 INICIAR ESCUCHA ACTIVA */
+export const startListening = async (lang: string = 'es-MX') => {
+  if (!recognition || isSpeaking) return false;
+  
+  // Limpieza previa para evitar bloqueos en Chrome
+  try { recognition.abort(); } catch(e) {}
+
+  recognition.lang = lang;
+  recognition.onresult = (event: any) => {
+    let interim = "";
+    let final = "";
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) final += event.results[i][0].transcript;
+      else interim += event.results[i][0].transcript;
+    }
+    if (interim) dispatch('partial_result', interim);
+    if (final) dispatch('final_result', { transcription: final.trim() });
+  };
+
+  try {
+    recognition.start();
+    return true;
+  } catch (e) { return false; }
+};
+
+/** 🗣️ PROTOCOLO AOEDE: DOBLE IMPACTO (x2) */
+export const speakLearning = async (text: string, lang: string) => {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  
+  isSpeaking = true;
+  try { recognition.abort(); } catch(e) {}
+  window.speechSynthesis.cancel();
+
+  const playUtterance = (rate: number, volume: number = 1.0) => {
+    return new Promise((resolve) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      const voices = window.speechSynthesis.getVoices();
+      
+      // Selección de voz premium (Google o Natural son las que mejor procesan el rate)
+      const preferredVoice = voices.find(v => 
+        v.lang.includes(lang) && (v.name.includes("Google") || v.name.includes("Natural"))
+      );
+
+      utterance.lang = lang;
+      utterance.rate = rate; 
+      utterance.volume = volume;
+      if (preferredVoice) utterance.voice = preferredVoice;
+
+      utterance.onend = () => resolve(true);
+      utterance.onerror = () => resolve(true);
+      window.speechSynthesis.speak(utterance);
+    });
+  };
+
+  try {
+    // 1ª Pasada: Normal
+    await playUtterance(1.0);
+    // Pausa táctica para fijación
+    await new Promise(r => setTimeout(r, 700)); 
+    // 2ª Pasada: Lenta (Doble Impacto)
+    await playUtterance(0.85, 0.9); 
+  } finally {
+    isSpeaking = false;
+    dispatch('speaking_finished', true);
+  }
+};
+
+/** 🛑 DETENER TODO */
+export const stopAllSpeech = () => {
+  if (recognition) try { recognition.abort(); } catch(e) {}
+  if (typeof window !== 'undefined') window.speechSynthesis.cancel();
+  isSpeaking = false;
+  isListening = false;
+};
+
+/** 🔌 GESTIÓN DE EVENTOS */
+export const onSpeechEvent = (event: string, cb: Function) => {
+  if (!listeners[event]) listeners[event] = [];
+  listeners[event].push(cb);
+};
+
+export const offSpeechEvent = (event: string, cb?: Function) => {
+  if (!cb) listeners[event] = [];
+  else listeners[event] = listeners[event]?.filter(l => l !== cb);
+};
+
+// Exportación única por defecto para que tus componentes no se rompan
+export default {
+  start: startListening,
+  speakLearning,
+  stopAll: stopAllSpeech,
+  on: onSpeechEvent,
+  off: offSpeechEvent
+};
