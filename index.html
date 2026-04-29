@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mencional">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    
+    <meta name="description" content="Mencional: Inmersión Lingüística y Aprendizaje Neural." />
+    <meta name="theme-color" content="#000000" />
+    <title>Mencional | Neural Immersion System</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet" />
+
+    <style>
+      :root {
+        --night-bg: #000000; /* OLED Pure Black */
+        --neon-cyan: #00FBFF; /* Cian Neón Identitario */
+        --deep-zinc: #09090b;
+      }
+
+      body, html {
+        background-color: var(--night-bg);
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+        width: 100%;
+        height: 100%;
+        color: white;
+        -webkit-user-select: none;
+           -moz-user-select: none;
+                user-select: none;
+        -webkit-tap-highlight-color: transparent; 
+      }
+
+      /* Splash Screen OLED-Ready */
+      #splash {
+        position: fixed;
+        inset: 0;
+        background-color: var(--night-bg);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
+      }
+
+      #splash.fade-out {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .logo-container {
+        animation: fadeIn 1.2s ease-out forwards;
+        text-align: center;
+      }
+
+      .logo-glow {
+        filter: drop-shadow(0 0 20px rgba(0, 251, 255, 0.3));
+      }
+
+      .loading-bar {
+        margin-top: 3rem;
+        width: 12rem;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.03);
+        position: relative;
+        overflow: hidden;
+        border-radius: 4px;
+      }
+
+      .loading-progress {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+        animation: shimmer 1.5s infinite ease-in-out;
+      }
+
+      @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+      }
+    </style>
+    <script type="module" crossorigin src="/mencional-web/assets/js/index-uanT0TyZ.js"></script>
+    <link rel="modulepreload" crossorigin href="/mencional-web/assets/js/vendor-libs-CV3HvImR.js">
+    <link rel="modulepreload" crossorigin href="/mencional-web/assets/js/vendor-ui-kit-BMcuBYcI.js">
+    <link rel="modulepreload" crossorigin href="/mencional-web/assets/js/vendor-google-ai-B4Fmyioz.js">
+    <link rel="stylesheet" crossorigin href="/mencional-web/assets/css/index-CmjiVdbR.css">
+  </head>
+
+  <body>
+    <div id="splash">
+      <div class="logo-container">
+        <h1 style="font-size: 3.5rem; font-weight: 900; letter-spacing: -0.05em; margin: 0; color: white; font-style: italic; line-height: 1;" class="logo-glow">
+          MENCIONAL<span style="color: var(--neon-cyan); font-weight: 400; font-style: normal;">.</span>
+        </h1>
+        
+        <div class="loading-bar">
+          <div class="loading-progress"></div>
+        </div>
+
+        <p style="margin-top: 1.5rem; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8em; color: rgba(0, 251, 255, 0.5);">
+          BOOTING_SERVICES_PATH_AI_v26_STABLE
+        </p>
+      </div>
+    </div>
+
+    <div id="root"></div>
+
+
+    <script>
+      /**
+       * Protocolo de Sincronía del Splash Screen.
+       * Garantiza la transición fluida del Splash al Root una vez cargado el entorno /ai/.
+       */
+      window.addEventListener('DOMContentLoaded', () => {
+        const splash = document.getElementById('splash');
+        
+        // El desvanecimiento ocurre una vez que el sistema está listo
+        window.addEventListener('load', () => {
+          setTimeout(() => {
+            if (splash) {
+              splash.classList.add('fade-out');
+            }
+          }, 1500); 
+        });
+      });
+    </script>
+  </body>
+</html>

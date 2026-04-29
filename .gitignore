@@ -1,0 +1,29 @@
+# Android / Java (Archivos que confunden a Vercel)
+*.iml
+.gradle
+/local.properties
+/.idea/
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+gradle/
+gradlew
+gradlew.bat
+build.gradle.kts
+settings.gradle.kts
+
+# Node / Web
+node_modules/
+dist/
+dist-ssr
+*.local
+.vercel
+package-lock.json
+
+# Sistema
+.DS_Store
+Thumbs.db
+.vercel
+.env*.local
