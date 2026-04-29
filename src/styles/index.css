@@ -1,0 +1,111 @@
+/**
+ * 🎨 MENCIONAL | GLOBAL_OLED_STYLING v2026.PROD
+ * Ubicación: /src/index.css
+ * Estética: Ultra-Dark, Contraste Infinito y Reactividad Neural.
+ * ✅ SINCRONIZADO: Protocolos de la carpeta /services/ai/
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* 🌑 Paleta Base OLED (Negro Absoluto para ahorro de energía) */
+  --bg-black: #000000;
+  --zinc-950: #050505;
+  
+  /* ⚡ Colores de Protocolo (Sincronizados con lógica en /ai/) */
+  --mencional-cyan: #00FBFF;    /* Modo Aprendizaje (6s) / Trends */
+  --rompehielo-purple: #AD00FF; /* Modo Rompehielo (4s) */
+  --ultra-rose: #F43F5E;        /* Modo Intérprete (19s) / Alerta Crítica */
+  
+  /* 🌈 Paleta de 10 Colores Oficiales (Sincronización Sesiones Dúo/Trío) */
+  --color-1: #00FBFF; --color-2: #39FF14; --color-3: #FF00FF;
+  --color-4: #FFFF00; --color-5: #FF3131; --color-6: #AD00FF;
+  --color-7: #FFA500; --color-8: #00FA9A; --color-9: #F5DEB3;
+  --color-10: #FFFFFF;
+}
+
+@layer base {
+  body {
+    /* Estética optimizada para inmersión 100% manos libres */
+    @apply bg-black text-white antialiased overflow-hidden select-none italic;
+    background-color: var(--bg-black);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Inmersión total: Scrollbars invisibles para evitar ruidos visuales */
+  ::-webkit-scrollbar { display: none; }
+}
+
+@layer components {
+  /* 🧊 CANDY_GLASS: Paneles de configuración y tendencias */
+  .glass-card {
+    @apply bg-zinc-950/40 backdrop-blur-2xl border border-white/10 rounded-[40px] transition-all duration-500;
+  }
+
+  /* 🔘 Botones Mencional (Estilo Píldora de alta jerarquía) */
+  .btn-mencional {
+    @apply py-6 px-10 rounded-[30px] font-[1000] uppercase text-[12px] tracking-[0.4em] italic transition-all active:scale-95 flex items-center justify-center gap-3;
+  }
+
+  /* 🏷️ TREND_PILL: Rectángulos de frases trend sincronizados con la nube AI */
+  .trend-pill {
+    @apply bg-zinc-900/50 border border-white/5 py-4 px-8 rounded-2xl text-[14px] font-bold text-white hover:border-[#00FBFF] hover:bg-black transition-all cursor-pointer;
+  }
+}
+
+/* 🌀 ANIMACIONES DE PROTOCOLO NEURAL (Vinculadas a /services/ai/) */
+
+/* 🕒 Ciclo de 19s: Optimización para Modo Intérprete y Nube de Ideas */
+@keyframes trend-fade {
+  0% { opacity: 0; transform: translateY(10px); }
+  10%, 90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+.animate-cycle-19s {
+  animation: trend-fade 19s ease-in-out infinite;
+}
+
+/* 🎙️ Pulso de Voz Aoede: Reactividad para Modos Rompehielo (4s) y Aprendizaje (6s) */
+@keyframes pulse-aoede {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 251, 255, 0.1); transform: scale(1); }
+  50% { box-shadow: 0 0 50px rgba(0, 251, 255, 0.4); transform: scale(1.02); }
+}
+.animate-pulse-aoede {
+  animation: pulse-aoede 2s infinite ease-in-out;
+}
+
+/* ✨ Texto Karaoke: Resaltado de fijación neural x2 */
+.karaoke-active {
+  @apply font-[1000] text-white;
+  text-shadow: 0 0 20px var(--mencional-cyan), 0 0 40px var(--mencional-cyan);
+}
+
+/* 📟 HUD: Reloj Crítico para aviso de renovación de bloque ($20 MXN) */
+@keyframes clock-alert {
+  0%, 100% { color: white; transform: scale(1); }
+  50% { color: var(--ultra-rose); transform: scale(1.15); }
+}
+.timer-critical {
+  animation: clock-alert 0.8s infinite ease-in-out;
+}
+
+/* 🟢 Sincronización Multi-Usuario (Identidad visual de participantes) */
+.participant-border {
+  border-left: 6px solid;
+  @apply pl-4 transition-colors duration-300;
+}
+
+/* 🌊 Scanlines: Estética de terminal profesional v2026 */
+.scanlines::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+              linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 2;
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}

@@ -1,0 +1,135 @@
+/* 🍬 MENCIONAL | CANDY_GLASS_SYSTEM v2026.PROD
+   Estética: Glossy, Ultra-Dark, Neon-Glow.
+   Ubicación: src/styles/CandyGlass.css 
+   ✅ SINCRONIZADO: Referencias de motor actualizadas de /ia/ a /ai/ */
+
+/* 1. CONTENEDOR BASE (Cristal Esmerilado Nocturno) 
+   Diseñado para el fondo negro absoluto OLED y ahorro de energía. */
+.candy-glass-container {
+  background: rgba(5, 5, 5, 0.75); 
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2.8rem;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9);
+}
+
+/* 2. BURBUJAS DE APOYO (El "Caramelo" de 19 segundos) 
+   Ciclo dinámico sincronizado con el Modo Intérprete residente en /services/ai/. */
+.candy-support-bubble {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  padding: 14px 28px;
+  border-radius: 1.8rem;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #fff;
+  animation: candyFloat 6s ease-in-out infinite, cycleFade 19s infinite;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* 3. INPUTS NEURALES (OLED Optimized) 
+   Optimizado para la Contraseña Admin ("osos") y Configuración. */
+.candy-glass-input {
+  background: rgba(255, 255, 255, 0.02);
+  border: 2px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1.5rem;
+  color: #ffffff;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-style: italic;
+  padding: 1.4rem 2.2rem;
+  width: 100%;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.25em;
+}
+
+.candy-glass-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--accent-color, #00FBFF);
+  box-shadow: 0 0 35px -5px var(--accent-color, rgba(0, 251, 255, 0.4));
+  transform: scale(1.02);
+}
+
+/* 4. BOTÓN DE ACCIÓN "POWER" 
+   El pulsador principal de inicio de sesión y sincronización AI. */
+.candy-glass-button-primary {
+  position: relative;
+  background: #ffffff;
+  color: #000000;
+  border-radius: 5rem;
+  font-weight: 1000;
+  text-transform: uppercase;
+  font-style: italic;
+  letter-spacing: 0.45em;
+  padding: 1.6rem 3.5rem;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.candy-glass-button-primary:hover {
+  letter-spacing: 0.65em;
+  transform: translateY(-5px);
+  box-shadow: 0 20px 50px -5px var(--accent-color, rgba(0, 251, 255, 0.5));
+  background: var(--accent-color, #00FBFF);
+}
+
+/* 5. SELECTOR DE 10 COLORES (Identidad de Sesión v2026) */
+.candy-glow-1 { --accent-color: #00FBFF; } /* Cian Principal (Motor AI) */
+.candy-glow-2 { --accent-color: #39FF14; } /* Verde Neón (Admin / "osos") */
+.candy-glow-3 { --accent-color: #FF00FF; } /* Magenta (Social) */
+.candy-glow-4 { --accent-color: #FFFF00; } /* Amarillo (Alerta Bloque) */
+.candy-glow-5 { --accent-color: #FF3131; } /* Rojo (Crítico / Pago) */
+.candy-glow-6 { --accent-color: #AD00FF; } /* Púrpura (Rompehielo) */
+.candy-glow-7 { --accent-color: #FFA500; } /* Naranja (Ultra) */
+.candy-glow-8 { --accent-color: #00FA9A; } /* Menta */
+.candy-glow-9 { --accent-color: #F5DEB3; } /* Arena */
+.candy-glow-10 { --accent-color: #FFFFFF; } /* Blanco Puro */
+
+/* 6. ANIMACIONES DE SISTEMA */
+@keyframes candyFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8px) scale(1.03); }
+}
+
+@keyframes cycleFade {
+  0%, 100% { opacity: 0; filter: blur(10px); }
+  10%, 90% { opacity: 1; filter: blur(0px); }
+}
+
+/* 7. CLASE ESPECIAL PARA TRENDS (Rectángulos Neurales) */
+.trend-candy-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px 32px;
+  border-radius: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.trend-candy-item:hover {
+  background: #000;
+  border-color: var(--accent-color, #00FBFF);
+  box-shadow: 0 0 20px var(--accent-color, rgba(0, 251, 255, 0.3));
+}
+
+/* 8. KARAOKE NEURAL (Fijación Lingüística x2) */
+.karaoke-active {
+  background: linear-gradient(90deg, #fff 0%, var(--accent-color, #00FBFF) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 1000;
+  filter: drop-shadow(0 0 12px var(--accent-color, rgba(0, 251, 255, 0.6)));
+  text-transform: uppercase;
+}
