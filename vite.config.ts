@@ -1,8 +1,8 @@
 /**
  * ⚡ VITE_CONFIG_PROD v2.6 - MENCIONAL 2026
  * Ubicación: /vite.config.ts
- * Objetivo: Resolución de rutas tácticas, inyección de variables de entorno (Auth)
- * y optimización de carga para dispositivos móviles.
+ * Objetivo: Resolución de rutas tácticas, inyección de variables de entorno y
+ * optimización de despliegue para Vercel y dispositivos móviles.
  */
 
 import { defineConfig, loadEnv } from 'vite';
@@ -10,7 +10,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig(({ mode }) => {
-  // Carga las variables de entorno (como VITE_ADMIN_BYPASS_CODE) según el modo
+  // Carga las variables de entorno según el modo (development/production)
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
-    // 🔑 SOLUCIÓN AL ERROR DE CONTRASEÑA: Expone las variables al navegador
+    // 🔑 SEGURIDAD Y ACCESO: Expone las variables críticas al cliente
     define: {
       'process.env.VITE_ADMIN_BYPASS_CODE': JSON.stringify(env.VITE_ADMIN_BYPASS_CODE),
     },
@@ -44,6 +44,7 @@ export default defineConfig(({ mode }) => {
         '@types': path.resolve(__dirname, './src/types'),
         '@styles': path.resolve(__dirname, './src/styles'),
         '@pages': path.resolve(__dirname, './src/pages'),
+        // ✅ CORRECCIÓN DE RUTA AI: Asegura que el servicio apunte a 'ai' y no 'ia'
         '@ai': path.resolve(__dirname, './src/services/ai'),
         '@data': path.resolve(__dirname, './src/services/data'),
         '@logic': path.resolve(__dirname, './src/services/logic'),
@@ -53,7 +54,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5173,
-      host: true, 
+      host: true, // 📱 Crucial para que el celular vea la PC en red local
       strictPort: true,
       hmr: { overlay: true },
       watch: { usePolling: true }
@@ -63,16 +64,17 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       target: 'esnext', 
       sourcemap: false, 
-      minify: 'terser', // Optimización que activamos previamente
+      minify: 'terser',
       terserOptions: {
         compress: {
-          drop_console: true,
+          drop_console: true, // Limpia la consola en producción para mayor velocidad
           drop_debugger: true,
           pure_funcs: ['console.info', 'console.debug', 'console.warn'] 
         },
       },
       rollupOptions: {
         output: {
+          // 📦 CODE-SPLITTING: Divide el código para cargas ultra rápidas en móvil
           manualChunks(id) {
             if (id.includes('node_modules')) {
               if (id.includes('firebase')) return 'vendor-firebase';
