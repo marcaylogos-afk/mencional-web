@@ -1,84 +1,45 @@
-/** 🎓 MENCIONAL | LEARNING_NODE v2026.PROD
- * Ubicación: /src/views/LearningMode.tsx
- * ✅ UPDATE: Protocolo de Radar 6s (Escucha activa extendida).
- * ✅ UPDATE: Sesión de 30 minutos (1800s).
- * ✅ UPDATE: Estética OLED Black #000000.
+/** 🎓 MENCIONAL | LEARNING_NODE v2.6.PROD
+ * ✅ PROTOCOLO: Aprendizaje (Traducción Total + Doble Impacto).
+ * ✅ FLUJO: Liberación inmediata del micro (No bloquea por sugerencias).
+ * ✅ OLED: Interfaz de contraste absoluto con resplandor dinámico.
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Volume2, ShieldAlert, Languages, Sparkles } from 'lucide-react';
+import { Zap, Sparkles, Cpu } from 'lucide-react';
 
-import { speechService } from '../services/ai/speechService'; 
+import speechService from '../services/ai/speechService'; 
 import { translateService } from '../services/ai/translateService';
+import neuralResponse from '../services/ai/NeuralResponse';
+import NeuralMessage, { MessageType } from '../components/NeuralMessage';
 import { useSettings } from '../context/SettingsContext';
 import { logger } from '../utils/logger';
 
 const LearningMode: React.FC = () => {
-  const { settings } = useSettings();
-  const themeColor = settings.themeColor || '#00FBFF'; 
+  const { settings, updateSettings } = useSettings();
+  const themeColor = settings?.themeColor || '#00FBFF'; 
   
   const [isAutoActive, setIsAutoActive] = useState(false);
+  const [neuralStatus, setNeuralStatus] = useState<MessageType>('STANDBY');
   const [transcript, setTranscript] = useState("");
   const [displayPhrase, setDisplayPhrase] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
-  // ✅ MODIFICADO: 30 minutos = 1800 segundos
-  const [timeLeft, setTimeLeft] = useState(1800); 
+  const [timeLeft, setTimeLeft] = useState(settings?.sessionTimeLeft || 1800); 
 
   const bufferRef = useRef("");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const sessionTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const suggestionTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isMounted = useRef(true);
 
-  /** 🧠 ACORDEÓN COGNITIVO: Sugerencias dinámicas */
-  const fetchDynamicSuggestions = useCallback(async () => {
-    try {
-      const hints = await translateService.getKeywords(
-        settings.currentTopic || "general", 
-        settings.targetLanguage || 'en-US'
-      );
-      setSuggestions(hints);
-    } catch (e) {
-      setSuggestions(["I like these colors", "Red and Blue", "What is this?"]);
+  // 🛡️ Sincronización de Modo Segura
+  useEffect(() => {
+    isMounted.current = true;
+    if (settings?.currentMode !== 'learning') {
+      updateSettings({ currentMode: 'learning' });
     }
-  }, [settings.currentTopic, settings.targetLanguage]);
-
-  /** 🔄 CICLO MENCIONAL: PROTOCOLO ESPEJO x2 */
-  const executeMencionalCycle = useCallback(async () => {
-    const inputText = bufferRef.current.trim();
-    
-    speechService.stop();
-    setIsAutoActive(false);
-
-    if (!inputText || !isMounted.current) {
-      resetToListening();
-      return;
-    }
-
-    setIsProcessing(true);
-
-    try {
-      const result = await translateService.translateText(inputText, 'learning');
-      if (!isMounted.current) return;
-
-      setDisplayPhrase(result.translation.toUpperCase()); 
-      setIsGlowing(true);
-
-      // 🗣️ DOBLE IMPACTO (1.0x -> 0.85x)
-      await speechService.speakLearning(result.translation, result.targetLang);
-
-      if (isMounted.current) {
-        setIsGlowing(false);
-        setTimeout(resetToListening, 1200); 
-      }
-    } catch (error) {
-      logger.error("AI_FLOW_FAIL", "Error en flujo Mencional_Cycle", error);
-      resetToListening();
-    }
-  }, [settings.targetLanguage]);
+    return () => { isMounted.current = false; };
+  }, []);
 
   const resetToListening = useCallback(() => {
     if (!isMounted.current || timeLeft <= 0) return;
@@ -90,21 +51,67 @@ const LearningMode: React.FC = () => {
     startSequence(); 
   }, [timeLeft]);
 
+  const executeMencionalCycle = useCallback(async () => {
+    const inputText = bufferRef.current.trim();
+    speechService.stop();
+    setIsAutoActive(false);
+
+    if (!inputText || !isMounted.current) {
+      setNeuralStatus('STANDBY');
+      resetToListening();
+      return;
+    }
+
+    setNeuralStatus('DECODING');
+    setIsProcessing(true);
+    
+    try {
+      // 🟢 MENCIONAL CORE: Traducción Total
+      const knownWords = settings?.knownVocabulary || [];
+      const result = await translateService.translateText(inputText, 'learning', knownWords);
+      
+      if (!isMounted.current) return;
+
+      setDisplayPhrase(result.translation.toUpperCase()); 
+      setIsGlowing(true);
+      setNeuralStatus('SPEAKING');
+
+      // ✅ DOBLE IMPACTO AUDITIVO (Voz Aoede)
+      await neuralResponse.executeLearningCycle(settings?.targetLanguage || 'en-US', result.translation);
+
+      if (isMounted.current) {
+        setIsGlowing(false);
+        setNeuralStatus('TREND_SYNC');
+        
+        // ⚡ LIBERACIÓN INMEDIATA DEL MICRO
+        resetToListening(); 
+
+        // 🎤 APOYO KARAOKE (Segundo plano)
+        translateService.getKeywords(result.translation).then(hints => {
+          if (isMounted.current) setSuggestions(hints);
+        });
+      }
+    } catch (error) {
+      logger.error("CYCLE", "Error en ciclo neural");
+      setNeuralStatus('ERROR');
+      setTimeout(resetToListening, 1500);
+    }
+  }, [settings, resetToListening]);
+
   const startSequence = useCallback(() => {
     if (isProcessing || !isMounted.current || timeLeft <= 0) return;
     
+    setNeuralStatus('AWAITING_INPUT');
     bufferRef.current = "";
     setTranscript("");
     setProgress(0);
     
-    speechService.start(settings.nativeLanguage || 'es-MX');
+    speechService.start(settings?.nativeLanguage || 'es-MX');
 
-    // ✅ MODIFICADO: Protocolo de escucha de 6 segundos
-    const duration = 6000; 
+    const duration = 5000; 
     const step = 50;
     
     if (timerRef.current) clearInterval(timerRef.current);
-    
     timerRef.current = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
@@ -115,76 +122,59 @@ const LearningMode: React.FC = () => {
         return prev + (100 / (duration / step));
       });
     }, step);
-  }, [isProcessing, timeLeft, executeMencionalCycle, settings.nativeLanguage]);
+  }, [isProcessing, timeLeft, executeMencionalCycle, settings?.nativeLanguage]);
 
+  // Manejo de resultados parciales del micro
   useEffect(() => {
     const handlePartial = (text: string) => {
-      bufferRef.current = text;
       setTranscript(text);
+      bufferRef.current = text;
     };
     speechService.on('partial_result', handlePartial);
-    return () => speechService.off('partial_result');
+    return () => speechService.off('partial_result', handlePartial);
   }, []);
 
+  // Cronómetro de Sesión
   useEffect(() => {
-    isMounted.current = true;
-    fetchDynamicSuggestions();
-    
-    suggestionTimerRef.current = setInterval(fetchDynamicSuggestions, 19000);
-    sessionTimerRef.current = setInterval(() => {
+    const cTimer = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev <= 1) {
-          speechService.stopAll();
-          return 0;
-        }
-        return prev - 1;
+        const next = prev <= 0 ? 0 : prev - 1;
+        if (next % 30 === 0) updateSettings({ sessionTimeLeft: next });
+        return next;
       });
     }, 1000);
 
     return () => {
-      isMounted.current = false;
+      clearInterval(cTimer);
       if (timerRef.current) clearInterval(timerRef.current);
-      if (suggestionTimerRef.current) clearInterval(suggestionTimerRef.current);
-      if (sessionTimerRef.current) clearInterval(sessionTimerRef.current);
-      speechService.stopAll(); 
+      neuralResponse.killAllCycles();
     };
-  }, [fetchDynamicSuggestions]);
-
-  const handleMicToggle = () => {
-    if (isAutoActive || isProcessing || timeLeft <= 0) {
-      speechService.stopAll();
-      setIsAutoActive(false);
-      setProgress(0);
-    } else {
-      setIsAutoActive(true);
-      startSequence();
-    }
-  };
+  }, [updateSettings]);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center p-8 select-none italic overflow-hidden">
+    <div className="min-h-[100dvh] bg-[#000000] text-white flex flex-col items-center p-8 select-none italic overflow-hidden font-sans">
       
-      {/* 🌑 CRONÓMETRO OLED */}
-      <div className={`fixed top-10 right-10 font-black flex items-center gap-4 transition-all duration-700 ${timeLeft <= 180 ? 'text-6xl text-rose-600 animate-pulse' : 'text-xs opacity-40'}`} style={timeLeft > 180 ? { color: themeColor } : {}}>
-        {timeLeft <= 180 && <ShieldAlert size={40} className="text-rose-600" />}
-        <span className="tabular-nums tracking-tighter">{Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}</span>
+      {/* HUD: CRONÓMETRO */}
+      <div className={`fixed top-12 right-10 font-black flex flex-col items-end transition-colors duration-500 ${timeLeft < 300 ? 'text-rose-600 animate-pulse scale-110' : 'text-[#00FBFF] opacity-20'}`}>
+        <span className="text-[10px] tracking-[0.2em] mb-1">{timeLeft < 300 ? 'LOW_TIME' : 'SESSION_REMAINING'}</span>
+        <span className="tabular-nums text-lg">
+          {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
+        </span>
       </div>
 
-      <header className="w-full mb-4 flex justify-between items-center">
-        <h2 className="text-[10px] font-black tracking-[0.5em] text-zinc-800 uppercase">Mencional_v2.6_ai/</h2>
-        <div className="flex items-center gap-2 text-[9px] font-bold text-zinc-500 tracking-widest uppercase">
-          <Languages size={12} style={{ color: themeColor }} /> Espejo_Bidireccional
-        </div>
+      <header className="w-full flex justify-between items-center opacity-30 text-[8px] font-black uppercase tracking-[0.5em] z-10">
+        <div className="flex items-center gap-2"><Cpu size={12} style={{ color: themeColor }} /> Mencional_Kernel_v2.6</div>
+        <div className="flex items-center gap-2"><Sparkles size={10} style={{ color: themeColor }} /> Aoede_Active</div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-6xl text-center">
-        
-        <div className="mb-12 flex flex-wrap justify-center gap-3">
+      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl text-center z-10">
+        <div className="h-10 mb-6 flex flex-wrap justify-center gap-2">
           <AnimatePresence>
-            {!displayPhrase && suggestions.map((hint, i) => (
+            {suggestions.map((hint) => (
               <motion.span 
-                key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                className="px-4 py-1 rounded-full border border-zinc-900 bg-zinc-950 text-[10px] font-bold text-zinc-600 uppercase tracking-widest"
+                key={hint}
+                initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                className="px-4 py-1 rounded-full border border-zinc-900 bg-zinc-950 text-[9px] font-black text-zinc-500 uppercase tracking-widest"
               >
                 {hint}
               </motion.span>
@@ -192,43 +182,71 @@ const LearningMode: React.FC = () => {
           </AnimatePresence>
         </div>
 
-        <AnimatePresence mode="wait">
-          {displayPhrase ? (
-            <motion.div key="display" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}>
-              <h2 className="text-7xl md:text-9xl font-[1000] leading-none uppercase tracking-tighter transition-all duration-1000" 
-                style={{ color: isGlowing ? themeColor : '#111', textShadow: isGlowing ? `0 0 70px ${themeColor}66` : 'none' }}>
-                {displayPhrase}
-              </h2>
-              <div className="mt-8 flex justify-center items-center gap-3 opacity-40">
-                <Volume2 size={16} style={{ color: themeColor }} className="animate-pulse" />
-                <span className="text-[10px] font-black tracking-[0.4em] uppercase">Impacto_Aoede_x2</span>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div key="prompt" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-              <p className="text-4xl md:text-6xl font-[1000] text-zinc-900 tracking-tighter leading-none italic uppercase">
-                {isAutoActive ? (transcript || "Escuchando_Señal...") : "Iniciar_Aprendizaje"}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="w-full h-20 mb-8">
+          <NeuralMessage type={neuralStatus} activeTurnColor={themeColor} />
+        </div>
+
+        <div className="relative min-h-[300px] flex items-center justify-center w-full px-4">
+          <AnimatePresence mode="wait">
+            {displayPhrase ? (
+              <motion.div key="display" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                <h2 className="text-6xl md:text-9xl font-[1000] uppercase tracking-tighter leading-[0.8] text-center transition-all duration-300" 
+                  style={{ 
+                    color: isGlowing ? themeColor : '#111', 
+                    textShadow: isGlowing ? `0 0 80px ${themeColor}AA` : 'none' 
+                  }}>
+                  {displayPhrase}
+                </h2>
+              </motion.div>
+            ) : (
+              <motion.div key="prompt" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-xl">
+                <p className={`text-4xl md:text-6xl font-[1000] italic uppercase transition-all duration-700 leading-tight ${isAutoActive ? 'text-white' : 'text-zinc-900'}`}>
+                  {isAutoActive ? (transcript || "Escuchando...") : "Protocolo_Standby"}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </main>
 
+      {/* ⚡ ACTIVADOR CENTRAL */}
       <div className="relative flex items-center justify-center mb-16">
         <svg width="240" height="240" className="rotate-[-90deg] absolute">
-          <circle cx="120" cy="120" r="110" stroke="#080808" strokeWidth="2" fill="transparent" />
+          <circle cx="120" cy="120" r="110" stroke="#0a0a0a" strokeWidth="2" fill="transparent" />
           {isAutoActive && (
-            <motion.circle cx="120" cy="120" r="110" stroke={themeColor} strokeWidth="6" fill="transparent" strokeDasharray="691"
-              animate={{ strokeDashoffset: 691 - (691 * progress) / 100 }} transition={{ ease: "linear", duration: 0.1 }} strokeLinecap="round"
-              style={{ filter: `drop-shadow(0 0 15px ${themeColor})` }}
+            <motion.circle 
+              cx="120" cy="120" r="110" stroke={themeColor} strokeWidth="4" fill="transparent" 
+              strokeDasharray="691" animate={{ strokeDashoffset: 691 - (691 * progress) / 100 }} 
+              transition={{ ease: "linear", duration: 0.1 }} strokeLinecap="round"
             />
           )}
         </svg>
-        <button onClick={handleMicToggle} disabled={isProcessing || timeLeft <= 0} 
-          className={`w-44 h-44 rounded-full flex items-center justify-center z-20 transition-all duration-700 ${isAutoActive ? 'bg-white text-black' : 'bg-zinc-900 text-zinc-700'}`}>
-          <Zap size={64} className={isAutoActive ? 'fill-current' : ''} />
+        
+        <button 
+          onClick={() => {
+            if (isAutoActive) {
+              speechService.stop();
+              setIsAutoActive(false);
+              setNeuralStatus('STANDBY');
+              if (timerRef.current) clearInterval(timerRef.current);
+            } else {
+              setIsAutoActive(true);
+              startSequence();
+            }
+          }} 
+          className={`w-40 h-40 rounded-full flex flex-col items-center justify-center z-20 transition-all duration-700 ${isAutoActive ? 'bg-white text-black scale-105 shadow-[0_0_80px_rgba(255,255,255,0.1)]' : 'bg-zinc-950 text-zinc-800 border border-zinc-900'}`}
+        >
+          <Zap size={48} className={isAutoActive ? 'fill-current animate-pulse' : ''} />
+          <span className="text-[9px] font-[1000] mt-3 tracking-[0.3em] uppercase">{isAutoActive ? 'Terminar' : 'Iniciar'}</span>
         </button>
       </div>
+
+      <footer className="mt-auto opacity-10 text-[7px] text-zinc-500 font-[1000] uppercase tracking-[1.5em] pb-6">
+        Mencional_Immersion_Protocol_v2.6
+      </footer>
+
+      {/* VIÑETA OLED */}
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] opacity-50 z-[-1]" />
     </div>
   );
 };
