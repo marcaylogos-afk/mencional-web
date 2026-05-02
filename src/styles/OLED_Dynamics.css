@@ -3,15 +3,14 @@
  * Sistema de renderizado para interfaces de alto contraste y baja latencia visual.
  * Enfoque: Negro Absoluto (#000) + Micro-resplandores Neón.
  * Ubicación: /src/styles/OLED_Dynamics.css
- * ✅ SINCRONIZADO: Referencias de procesamiento para el motor /ai/
  */
 
 :root {
   /* 🎨 PALETA MAESTRA MENCIONAL (10 Colores Neón) */
-  --neon-cyan: #00FBFF;    /* Principal / Modo Ultra / Motor AI */
+  --neon-cyan: #00FBFF;    /* Principal / Modo Mencional / Motor AI */
   --neon-purple: #AD00FF;  /* Modo Rompehielo / Inferencia AI */
   --neon-yellow: #FBBF24;  /* Modo Aprendizaje / Alerta de Bloque */
-  --neon-rose: #F43F5E;    /* Crítico / Pago Denegado ($20 MXN) */
+  --neon-rose: #F43F5E;    /* Crítico / Pago Denegado / Alerta 19s */
   --neon-green: #39FF14;   /* Éxito / Nodo Maestro Online (Protocolo 'osos') */
   --neon-orange: #FF5F00;  /* Energía / Procesamiento AI Activo */
   --neon-blue: #3B82F6;    /* Confianza / Seguridad de Sesión */
@@ -19,7 +18,7 @@
   --neon-indigo: #6366F1;  /* Profundidad / Datos de Red */
   --neon-white: #FFFFFF;   /* Claridad / Texto de Inmersión */
   
-  /* 🌑 SUPERFICIES OLED ABSOLUTAS (Ahorro de Energía) */
+  /* 🌑 SUPERFICIES OLED ABSOLUTAS */
   --oled-black: #000000;
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-surface: rgba(10, 10, 10, 0.65);
@@ -28,15 +27,74 @@
   --font-ultra: 1000;
 }
 
-/* 🌑 BLACK_OUT: El lienzo base de la aplicación Mencional */
-body, .bg-oled-black {
+/* 🌑 BLACK_OUT: El lienzo base */
+html, body {
   background-color: var(--oled-black) !important;
   color: #ffffff;
-  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
+  overflow-y: auto; 
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* 🧊 CANDY_GLASS: Efecto de cristal premium para paneles de configuración */
+/* 📜 PROTOCOLO DE SCROLL INVISIBLE (Estética Pura) */
+.learning-container {
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -ms-overflow-style: none;  /* IE/Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.learning-container::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* 📱 RESPONSIVE_LAYOUT: Adaptación de escalas */
+.display-phrase {
+  font-weight: var(--font-ultra);
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  line-height: 0.85;
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Mobile: Texto contenido y scroll amplio */
+@media (max-width: 640px) {
+  .display-phrase {
+    font-size: 3.8rem !important;
+    padding: 0 1rem;
+  }
+  .main-layout {
+    padding-top: 140px;
+    padding-bottom: 220px;
+  }
+  .timer-hud {
+    transform: scale(1.4);
+    transform-origin: right top;
+  }
+}
+
+/* Tablet: Escala intermedia */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .display-phrase {
+    font-size: 6rem !important;
+  }
+}
+
+/* Laptop/Desktop: Impacto Monumental */
+@media (min-width: 1025px) {
+  .display-phrase {
+    font-size: 10rem !important;
+  }
+}
+
+/* 🧊 CANDY_GLASS: Paneles Premium */
 .candy-glass {
   background: var(--glass-surface);
   backdrop-filter: blur(30px) saturate(190%);
@@ -44,30 +102,27 @@ body, .bg-oled-black {
   border: 1px solid var(--glass-border);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
   transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  border-radius: 24px;
 }
 
 .candy-glass:hover {
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(0, 251, 255, 0.3);
   background: rgba(15, 15, 15, 0.75);
   transform: translateY(-2px);
 }
 
-/* ⚡ NEURAL_GLOW: Resplandores dinámicos optimizados para OLED */
+/* ⚡ NEURAL_GLOW: Resplandores */
 .glow-cyan { box-shadow: 0 0 30px rgba(0, 251, 255, 0.15); border-color: rgba(0, 251, 255, 0.5); }
-.glow-purple { box-shadow: 0 0 30px rgba(173, 0, 255, 0.15); border-color: rgba(173, 0, 255, 0.5); }
-.glow-yellow { box-shadow: 0 0 30px rgba(251, 191, 36, 0.15); border-color: rgba(251, 191, 36, 0.5); }
-.glow-rose { box-shadow: 0 0 30px rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.5); }
 .glow-green { box-shadow: 0 0 30px rgba(57, 255, 20, 0.15); border-color: rgba(57, 255, 20, 0.5); }
+.glow-rose { box-shadow: 0 0 30px rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.5); }
 
-/* 🌊 STREAM_TEXT: Animación para el modo Aprendizaje (Karaoke Neural) */
+/* 🌊 STREAM_TEXT: Animación de carga visual */
 .stream-text-reveal {
   background: linear-gradient(90deg, #fff 0%, #fff 50%, rgba(255,255,255,0.15) 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: streamReveal 2.2s linear infinite;
-  font-weight: var(--font-ultra);
-  text-transform: uppercase;
 }
 
 @keyframes streamReveal {
@@ -75,29 +130,7 @@ body, .bg-oled-black {
   100% { background-position: -120% 0%; }
 }
 
-/* 🏷️ TREND_RECTANGLE: Frases trend sincronizadas con la nube AI */
-.trend-rectangle {
-  background: #0a0a0a;
-  border: 1px solid var(--glass-border);
-  padding: 1rem 1.6rem;
-  border-radius: 1rem;
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--neon-cyan);
-  display: inline-block;
-  margin: 0.6rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-}
-
-.trend-rectangle:hover {
-  background: var(--oled-black);
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 20px rgba(0, 251, 255, 0.3);
-  transform: scale(1.05);
-}
-
-/* 🌪️ BRAIN_SYNC: Resplandor de fondo cuando la carpeta 'ai' procesa audio real */
+/* 🌪️ BRAIN_SYNC: Pulso de fondo */
 .neural-sync-glow {
   position: absolute;
   width: 350px;
@@ -108,6 +141,7 @@ body, .bg-oled-black {
   pointer-events: none;
   border-radius: 50%;
   animation: pulseGlow 4s infinite ease-in-out;
+  z-index: 0;
 }
 
 @keyframes pulseGlow {
@@ -115,9 +149,9 @@ body, .bg-oled-black {
   50% { opacity: 0.18; transform: scale(1.25); }
 }
 
-/* 📟 INDICADOR DE MODO: SOLUCIÓN AL ERROR DE COMPILACIÓN VITE */
+/* 📟 INDICADOR DE MODO (HUD) */
 .mode-badge {
-  padding: 6px 14px;
+  padding: 8px 16px;
   border-radius: 24px;
   font-weight: 800;
   font-size: 10px;
@@ -129,12 +163,28 @@ body, .bg-oled-black {
   align-items: center;
   color: var(--neon-white);
   backdrop-filter: blur(5px);
+  gap: 8px;
 }
 
 /* 🛠️ UTILS */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-.fade-edge-bottom {
-  mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+.safe-area-bottom {
+  padding-bottom: 140px; 
+}
+
+@media (min-width: 1024px) {
+  .safe-area-bottom {
+    padding-bottom: 40px;
+  }
+}
+
+/* 🟢 ESTADO NODO MAESTRO */
+.status-online {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--neon-green);
+  box-shadow: 0 0 10px var(--neon-green);
 }

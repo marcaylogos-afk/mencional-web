@@ -45,32 +45,38 @@ const SessionSelector: React.FC = () => {
       "Sincronización Aoede"
     ];
     setTrends(localizedTrends);
+    
+    logger.info("VIEW_MOUNT", "SessionSelector cargado correctamente.");
   }, []);
 
+  /** ✅ PROTOCOLO DE INICIO SEGURO: Evita bucles por fallos de audio */
   const handleStartSession = async () => {
     const mode = settings.activeMode || 'learning';
+    
+    // 1. Navegación inmediata (Prioridad de UX)
+    const targetPath = `/${mode}`;
+    
     try {
-      if (mode === 'learning') {
-        await speechService.speak("Iniciando Modo Mencional.", { lang: 'es-MX', rate: 1.1 });
-        navigate('/learning'); 
-      } else if (mode === 'ultra') {
-        await speechService.speak("Ultra-Mencional sincronizado.", { lang: 'es-MX', rate: 1.1 });
-        navigate('/ultra'); 
-      } else if (mode === 'rompehielo') {
-        await speechService.speak("Modo Rompehielo activo.", { lang: 'es-MX', rate: 1.1 });
-        navigate('/rompehielo');
-      }
+      // 2. Intento de feedback de audio (puede fallar por políticas de navegador)
+      const feedbackMsg = mode === 'ultra' ? "Ultra-Mencional sincronizado." : 
+                          mode === 'rompehielo' ? "Modo Rompehielo activo." : 
+                          "Iniciando Modo Mencional.";
+
+      // No usamos 'await' aquí para que la navegación no dependa del audio
+      speechService.speak(feedbackMsg, { lang: 'es-MX', rate: 1.1 })
+        .catch(e => logger.warn("AUDIO_SILENCED", "Navegador bloqueó autoplay de voz."));
+
       logger.info("SESSION_START", `Modo ${mode} iniciado.`);
+      navigate(targetPath);
     } catch (error) {
-      logger.error("AUDIO_FAULT", "Fallo en feedback inicial", error);
-      const backupPath = mode === 'learning' ? '/learning' : mode === 'ultra' ? '/ultra' : '/rompehielo';
-      navigate(backupPath);
+      logger.error("NAV_ERROR", "Fallo crítico en transición", error);
+      navigate(targetPath); // Backup de navegación
     }
   };
 
   return (
-    /* ✅ FIX: 'h-full overflow-y-auto' permite el scroll en móviles con notch/barras de navegación */
     <div className="h-full min-h-screen w-full bg-black text-white p-6 flex flex-col font-sans select-none italic overflow-y-auto overflow-x-hidden relative">
+      {/* Capa de efecto visual CRT/OLED */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03] bg-scanlines" />
 
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 relative z-10 gap-6">
@@ -207,7 +213,6 @@ const SessionSelector: React.FC = () => {
               />
             </div>
             
-            {/* ✅ BOTÓN CRÍTICO: py-8 y margin-bottom para asegurar visibilidad en móviles */}
             <button 
               onClick={handleStartSession}
               className="w-full py-10 mb-8 bg-[#39FF14] text-black rounded-3xl font-[1000] uppercase tracking-[0.4em] text-[13px] flex items-center justify-center gap-4 hover:scale-[1.02] transition-all shadow-[0_10px_50px_rgba(57,255,20,0.3)] active:scale-95"
