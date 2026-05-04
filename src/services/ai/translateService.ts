@@ -1,13 +1,14 @@
 /** 🛰️ MENCIONAL | NEURAL_TRANSLATE_ENGINE v2026.PROD
  * Protocolo: Ultra-Low Latency | Bidirectional Auto-Detection | Multi-Mode Sync
  * Ubicación: /src/services/ai/translateService.ts
+ * ✅ UPDATE: Soporte para detección automática EN/ES (Protocolo Espejo).
+ * ✅ UPDATE: Sincronización con sesiones optimizadas de 30 min.
  */
 
 import { sanitizeText } from '../../utils/sanitizeText';
 import { logger } from '../../utils/logger';
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-// Endpoint actualizado para Gemini 2.0 Flash
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 export interface GlobalTrend {
@@ -19,7 +20,7 @@ export interface GlobalTrend {
 
 /**
  * 🧠 translateText (Motor Híbrido Bidireccional)
- * Traduce automáticamente basándose en el idioma detectado con Swap-Logic.
+ * Traduce automáticamente basándose en el idioma detectado.
  */
 export const translateText = async (
   text: string, 
@@ -31,31 +32,34 @@ export const translateText = async (
   const cleanInput = sanitizeText(text);
 
   try {
-    // 🛡️ PROTOCOLO ESPEJO: El target por defecto suele ser inglés.
+    // 🛡️ PROTOCOLO ESPEJO: Detección inicial (Google gtx detecta sl=auto automáticamente)
+    // El objetivo por defecto es inglés, pero cambiaremos si el input ya es inglés.
     let target = 'en'; 
     
-    // 🛡️ REGLA DE ORO MODO ULTRA / APRENDIZAJE: 
-    // En Ultra el admin recibe español. En Learning, si el input es español, queremos inglés.
-    if (mode === 'ultra') target = 'es';
+    // 🛡️ REGLA DE ORO MODO ULTRA: El administrador recibe siempre en Español.
+    if (mode === 'ultra') {
+      target = 'es';
+    }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2800); // Latencia estricta para Radar
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-    // Usamos el motor de Translate con un fallback a Gemini si el 404 persiste
+    // Llamada al motor de ultra-baja latencia
     const response = await fetch(
       `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&dt=ld&q=${encodeURIComponent(cleanInput)}`,
       { signal: controller.signal }
     );
 
+    clearTimeout(timeoutId);
     if (!response.ok) throw new Error("GOOGLE_FETCH_FAIL");
 
     const data = await response.json();
-    const detectedSrc = data?.[2] || "es"; 
+    const detectedSrc = data?.[2] || "es"; // Idioma detectado por el motor
     let translation = data?.[0]?.[0]?.[0]?.trim() || cleanInput;
 
-    // 🔄 LÓGICA DE SWAP DINÁMICO (Bidireccional)
+    // 🔄 LÓGICA DE SWAP (Si detectó inglés y el target era inglés, re-traducimos a español)
     let finalTarget = target;
-    if (isAutoDetect && mode !== 'ultra' && detectedSrc === 'en') {
+    if (isAutoDetect && mode !== 'ultra' && detectedSrc === 'en' && target === 'en') {
       finalTarget = 'es';
       const retryResponse = await fetch(
         `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=es&dt=t&q=${encodeURIComponent(cleanInput)}`
@@ -64,44 +68,36 @@ export const translateText = async (
       translation = retryData?.[0]?.[0]?.[0]?.trim() || translation;
     }
 
-    clearTimeout(timeoutId);
-
-    // ✨ LIMPIEZA NEURAL DE OUTPUT
-    translation = translation
-      .replace(/^(translated|traducción|traducido|output|result):\s*/i, "")
-      .replace(/[\[\]{}()]/g, "")
-      .trim();
-
-    /** 🎓 PROCESAMIENTO POR MODO */
-    if (mode === 'learning' && cleanInput.length > 3) {
-      triggerTrendEffect(cleanInput, "LEARNING"); 
-    } 
+    /** 🎓 PROCESAMIENTO TÁCTICO POR MODO */
+    if (mode === 'learning') {
+      if (cleanInput.length > 3) triggerTrendEffect(cleanInput, "LEARNING"); 
+    } else if (mode === 'ultra') {
+      translation = translation.replace(/[\[\]{}()]/g, "").replace(/\s+/g, ' '); 
+    } else if (mode === 'rompehielo') {
+      if (cleanInput.length > 2) triggerTrendEffect(cleanInput, "SOCIAL");
+    }
 
     return { 
-      translation: translation.toUpperCase(), 
+      translation, 
       sourceLang: detectedSrc, 
       targetLang: finalTarget 
     };
 
   } catch (error) {
-    logger.error("TRANSLATE_FAILURE", "Fallo en motor neural. Activando modo Espejo.", error);
-    // Fallback: Si el 404 ocurre, devolvemos el texto original para no romper el flujo visual.
-    return { translation: cleanInput.toUpperCase(), sourceLang: "auto", targetLang: "en" }; 
+    logger.error("TRANSLATE_FAILURE", "Fallo en motor neural. Usando redundancia.", error);
+    return { translation: cleanInput, sourceLang: "auto", targetLang: "en" }; 
   }
 };
 
 /**
- * 🧊 getDynamicAIKeywords (Acordeón Cognitivo)
- * Genera sugerencias basadas en el contexto usando Gemini 2.0 Flash.
+ * 🧊 getDynamicAIKeywords
+ * Genera sugerencias sociales naturales para el Modo Rompehielo.
  */
 export const getDynamicAIKeywords = async (
   lastTranscript: string, 
   targetLang: string = "en-US",
 ): Promise<string[]> => {
-  // Failsafe si no hay API KEY o el texto es muy corto
-  if (!lastTranscript || lastTranscript.length < 3 || !GEMINI_API_KEY) {
-    return ["KEEP GOING", "TE ESCUCHO", "CONTINUE"];
-  }
+  if (!lastTranscript || !GEMINI_API_KEY) return ["Interesante", "Sigue", "Te escucho"]; 
 
   try {
     const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
@@ -110,40 +106,30 @@ export const getDynamicAIKeywords = async (
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `Context: Language immersion app 'Mencional'. 
-            User said: "${lastTranscript}". 
-            Output: 3 short conversation hints in ${targetLang}. 
-            Format: Raw JSON array of strings, max 2 words per string. No prose.`
+            text: `Context: Mencional App. Social interaction. Input: "${lastTranscript}". 
+            Task: Provide 3 short, natural responses. Return ONLY a raw JSON array of strings.`
           }]
         }],
         generationConfig: { 
           responseMimeType: "application/json", 
-          temperature: 1 
+          temperature: 0.8 
         }
       })
     });
 
     const data = await response.json();
-    
-    // Manejo de errores de cuota o 404 de Gemini
-    if (data.error) {
-      logger.error("GEMINI_KEYWORD_ERROR", data.error.message);
-      return ["SIGUE HABLANDO", "INTERESANTE", "CUÉNTAME MÁS"];
-    }
-
     const suggestionsText = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
     const suggestions = JSON.parse(suggestionsText);
     
-    return Array.isArray(suggestions) 
-      ? suggestions.map(s => s.toUpperCase()).slice(0, 3) 
-      : ["TE ESCUCHO", "CONTINUAR", "OK"];
+    return Array.isArray(suggestions) ? suggestions.slice(0, 3) : ["Ok", "Great", "Cool"];
   } catch (error) {
-    return ["PROCESANDO...", "SIGUE HABLANDO", "ADAPTANDO..."];
+    return ["Entiendo", "Cuéntame más", "Ok"];
   }
 };
 
 /**
- * 🚀 triggerTrendEffect (Cloud de Tendencias Local)
+ * 🚀 triggerTrendEffect
+ * Sincronización con el Cloud de Tendencias (OLED Optimized).
  */
 export const triggerTrendEffect = (phrase: string, context: string = "GENERAL"): void => {
   if (!phrase || phrase.length < 3) return;
@@ -163,11 +149,12 @@ export const triggerTrendEffect = (phrase: string, context: string = "GENERAL"):
       trends[existingIndex].count += 1;
     }
 
-    const thirtyMinsAgo = Date.now() - (30 * 60 * 1000);
+    // Mantener solo tendencias de la última hora
+    const oneHourAgo = Date.now() - (60 * 60 * 1000);
     const sortedTrends = trends
-      .filter(t => t.timestamp > thirtyMinsAgo)
+      .filter(t => t.timestamp > oneHourAgo)
       .sort((a, b) => b.count - a.count)
-      .slice(0, 15);
+      .slice(0, 20);
 
     localStorage.setItem(TREND_KEY, JSON.stringify(sortedTrends));
   } catch (err) {

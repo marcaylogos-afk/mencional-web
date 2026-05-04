@@ -1,6 +1,7 @@
 /** 🎓 MENCIONAL | LEARNING_NODE v2.6.PROD
  * ✅ PROTOCOLO: Aprendizaje (Traducción Total + Doble Impacto).
  * ✅ FLUJO: Liberación inmediata del micro (No bloquea por sugerencias).
+ * * ✅ ACORDEÓN: Español (Mix Mayúsculas/Minúsculas) | Ciclo 19s
  * ✅ OLED: Interfaz de contraste absoluto con resplandor dinámico.
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -13,6 +14,7 @@ import neuralResponse from '../services/ai/NeuralResponse';
 import NeuralMessage, { MessageType } from '../components/NeuralMessage';
 import { useSettings } from '../context/SettingsContext';
 import { logger } from '../utils/logger';
+
 
 const LearningMode: React.FC = () => {
   const { settings, updateSettings } = useSettings();
@@ -133,7 +135,27 @@ const LearningMode: React.FC = () => {
     speechService.on('partial_result', handlePartial);
     return () => speechService.off('partial_result', handlePartial);
   }, []);
+/** 🧠 ACORDEÓN COGNITIVO: Sugerencias dinámicas */
+const fetchDynamicSuggestions = useCallback(async () => {
+  try {
+    // Pedimos al servicio palabras clave relacionadas al tema actual
+    const hints = await translateService.getKeywords(
+      settings.currentTopic || "general", 
+      settings.targetLanguage || 'en-US'
+    );
+    setSuggestions(hints);
+  } catch (e) {
+    // Sugerencias de respaldo si falla la IA
+    setSuggestions(["I like these colors", "Red and Blue", "What is this?"]);
+  }
+}, [settings.currentTopic, settings.targetLanguage]);
 
+useEffect(() => {
+  fetchDynamicSuggestions();
+  // Rotamos sugerencias cada 19s para mantener el cerebro activo
+  const interval = setInterval(fetchDynamicSuggestions, 19000);
+  return () => clearInterval(interval);
+}, [fetchDynamicSuggestions]);
   // Cronómetro de Sesión
   useEffect(() => {
     const cTimer = setInterval(() => {

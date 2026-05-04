@@ -1,7 +1,7 @@
 /** ⚙️ MENCIONAL | SESSION_SETUP v2026.PROD
  * ✅ ACTUALIZACIÓN: Sesiones de 30 min / $50 MXN.
- * ✅ PRIVILEGIOS: Bypass automático para Nodo Maestro (Admin).
- * ✅ DIRECTORIO AI: Sincronizado con services/ai/.
+ * ✅ PRIVILEGIOS: Bypass automático para Nodo Maestro.
+ * ✅ DIRECTORIO AI: Sincronizado.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -17,7 +17,7 @@ const SessionSetup: React.FC = () => {
   const navigate = useNavigate();
   const { settings, updateSettings } = useSettings();
   
-  // 🔐 Validación de Rango Maestro: Comprueba si el rol es 'admin'
+  // 🔐 Validación de Rango Maestro
   const isActuallyAdmin = useMemo(() => settings.role === 'admin', [settings.role]);
 
   const COLORS_10 = [
@@ -35,47 +35,45 @@ const SessionSetup: React.FC = () => {
   /** 🚀 INICIO DE PROTOCOLO
    * Administradores: Acceso total ilimitado (Bypass).
    * Aprendizaje Individual: 30 minutos / $50 MXN.
-   * Grupos: Pago colectivo de $90 MXN.
+   * Grupos: Redirección a link de pago de $90 MXN.
    */
   const handleStart = async () => {
     setIsSyncing(true);
     
-    // ✅ Optimización: Sesiones de 30 minutos (1800 segundos)
+    // 30 minutos = 1800 segundos para aprendizaje optimizado
     const SESSION_LIMIT = 1800; 
 
     const config = {
       targetLanguage: practiceLang,
       themeColor: selectedColor, 
-      userAlias: userName.trim() || (isActuallyAdmin ? 'NODO_MAESTRO' : 'NEURAL_USER'),
+      userAlias: userName.trim() || (isActuallyAdmin ? 'OPERADOR_MAESTRO' : 'NEURAL_USER'),
       currentTopic: sessionTitle.trim() || 'SESIÓN_ESTÁNDAR',
       groupMode: modality,
-      isPaid: isActuallyAdmin, // Bypass de pago si es admin
+      isPaid: isActuallyAdmin, // Solo el admin nace "pagado" para evitar el checkout
       isUnlimited: isActuallyAdmin,
       sessionTimeLeft: isActuallyAdmin ? 999999 : SESSION_LIMIT,
-      sessionActive: true
     };
 
     try {
       await updateSettings(config);
-      logger.info("SETUP", `Sincronizando Nodo: ${isActuallyAdmin ? 'MASTER_ADMIN' : 'GUEST_OPERATOR'}`);
+      logger.info("SETUP", `Sincronizando Nodo: ${isActuallyAdmin ? 'ADMIN' : 'GUEST'}`);
       
-      // Simulación de sincronización neural
       setTimeout(() => {
-        // 🛡️ REGLA DE ORO: Si es Admin, salta el checkout
+        // 🛡️ REGLA DE ORO: Si es Admin, salta directo al learning
         if (isActuallyAdmin) {
           navigate('/learning'); 
           return;
         }
 
-        // Flujo de cobro para usuarios
+        // Redirección por cobro para usuarios estándar
         if (modality === 'individual') {
-          // ✅ Link de pago actualizado a $50 MXN
-          window.location.href = "https://mpago.la/LINK_50_MXN_PROD"; 
+          // Link actualizado a $50 MXN
+          window.location.href = "https://mpago.la/LINK_DE_50_MXN"; 
         } else {
-          // Link grupal $90 MXN
+          // Link de pago grupal ($90 MXN)
           window.location.href = "https://mpago.la/1HJRXhD"; 
         }
-      }, 1200);
+      }, 1000);
     } catch (error) {
       logger.error("SETUP_SYNC_ERROR", error);
       setIsSyncing(false);
@@ -83,142 +81,130 @@ const SessionSetup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 md:p-12 flex flex-col items-center relative overflow-x-hidden select-none font-sans italic selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-black text-white p-4 md:p-12 flex flex-col items-center relative overflow-x-hidden select-none font-sans italic">
       
-      {/* Fondo OLED Dinámico */}
       <div 
-        className="fixed inset-0 pointer-events-none z-0 opacity-[0.07] transition-all duration-1000" 
-        style={{ background: `radial-gradient(circle at 50% 100%, ${selectedColor} 0%, transparent 70%)` }} 
+        className="fixed inset-0 pointer-events-none z-0 opacity-10 transition-all duration-1000" 
+        style={{ background: `radial-gradient(circle at 50% 100%, ${selectedColor} 0%, transparent 80%)` }} 
       />
 
-      <header className="w-full max-w-6xl flex justify-between items-center z-20 mb-12">
+      <header className="w-full max-w-6xl flex justify-between items-center z-20 mb-8">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-zinc-950 border border-zinc-900 rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-            <Zap size={28} style={{ color: selectedColor }} className="drop-shadow-[0_0_10px_currentColor] fill-current" />
-          </div>
-          <div className="flex flex-col border-l border-zinc-900 pl-4">
-            <span className="text-[10px] font-black tracking-[0.5em] text-zinc-600 uppercase">Mencional_Core_v2.6</span>
+          <Zap size={32} style={{ color: selectedColor }} className="drop-shadow-[0_0_15px_currentColor]" />
+          <div className="flex flex-col border-l border-zinc-800 pl-4">
+            <span className="text-[9px] font-black tracking-[0.4em] text-zinc-500 uppercase leading-none">Mencional_v2.6</span>
             {isActuallyAdmin && (
-              <span className="text-[8px] font-black text-[#39FF14] uppercase tracking-widest flex items-center gap-1.5 mt-1 animate-pulse">
-                <ShieldCheck size={10}/> Nodo_Maestro_Identificado
+              <span className="text-[8px] font-black text-[#39FF14] uppercase tracking-widest flex items-center gap-1.5 mt-1">
+                <ShieldCheck size={10}/> Acceso_Maestro_Concedido
               </span>
             )}
           </div>
         </div>
-        <button onClick={() => navigate('/selector')} className="p-4 bg-zinc-950 rounded-full border border-zinc-900 text-zinc-700 hover:text-white hover:border-zinc-700 transition-all">
+        <button onClick={() => navigate('/selector')} className="p-3 bg-zinc-950 rounded-full border border-zinc-900 text-zinc-500 hover:text-white transition-all">
           <X size={20} />
         </button>
       </header>
 
-      <div className="w-full max-w-3xl space-y-12 z-10">
-        <section className="text-center space-y-2">
-          <h1 className="text-7xl md:text-9xl font-[1000] uppercase tracking-tighter leading-none">
-            SETUP<span style={{ color: selectedColor }}>.</span>SYS
+      <div className="w-full max-w-3xl space-y-10 z-10">
+        <section className="text-center">
+          <h1 className="text-6xl md:text-8xl font-[1000] uppercase tracking-tighter leading-none">
+            CONFIG<span style={{ color: selectedColor }}>_</span>NODO
           </h1>
-          <p className="text-[9px] font-black tracking-[1em] text-zinc-800 uppercase">Configuración_De_Entorno</p>
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-3">
-            <label className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-600 ml-6">Operador_Alias</label>
+          <div className="space-y-2">
+            <label className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-600 ml-4">Pseudónimo_ID</label>
             <input 
               type="text" value={userName} onChange={(e) => setUserName(e.target.value.toUpperCase())}
-              placeholder="MAINFRAME_USER"
-              className="w-full bg-zinc-950 border-2 border-zinc-900 p-6 rounded-[2.5rem] outline-none focus:border-zinc-700 transition-all text-xs font-black tracking-[0.2em] uppercase"
+              placeholder="USUARIO_ALFA"
+              className="w-full bg-zinc-950 border-2 border-zinc-900 p-5 rounded-[2rem] outline-none focus:border-zinc-700 transition-all text-xs font-black tracking-widest"
             />
           </div>
-          <div className="space-y-3">
-            <label className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-600 ml-6">Contexto_Semántico</label>
+          <div className="space-y-2">
+            <label className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-600 ml-4">Tópico_Contextual</label>
             <input 
               type="text" value={sessionTitle} onChange={(e) => setSessionTitle(e.target.value.toUpperCase())}
-              placeholder="EJ: NEGOCIACIÓN_AI"
-              className="w-full bg-zinc-950 border-2 p-6 rounded-[2.5rem] outline-none transition-all text-xs font-black tracking-[0.2em] uppercase"
-              style={{ color: selectedColor, borderColor: `${selectedColor}33` }}
+              placeholder="EJ: TECH_TALK"
+              className="w-full bg-zinc-950 border-2 p-5 rounded-[2rem] outline-none transition-all text-xs font-black tracking-widest"
+              style={{ color: selectedColor, borderColor: `${selectedColor}44` }}
             />
           </div>
         </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <label className="text-[8px] font-black uppercase text-zinc-600 tracking-[0.4em] ml-6">Sincronización_Voz</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <label className="text-[8px] font-black uppercase text-zinc-600 tracking-[0.3em] ml-4">Target_Language</label>
             <div className="relative">
               <select 
                 value={practiceLang} onChange={(e) => setPracticeLang(e.target.value)} 
-                className="w-full bg-zinc-950 border-2 border-zinc-900 p-6 rounded-[2.5rem] text-xs font-black uppercase tracking-[0.2em] outline-none appearance-none cursor-pointer text-center hover:border-zinc-800 transition-colors"
+                className="w-full bg-zinc-950 border-2 border-zinc-900 p-6 rounded-[2.5rem] text-xs font-black uppercase tracking-widest outline-none appearance-none cursor-pointer text-center"
                 style={{ color: selectedColor }}
               >
-                <option value="en-US">Inglés (US) 🇺🇸</option>
-                <option value="fr-FR">Francés 🇫🇷</option>
-                <option value="de-DE">Alemán 🇩🇪</option>
+                <option value="en-US">Inglés 🇺🇸</option>
                 <option value="it-IT">Italiano 🇮🇹</option>
                 <option value="pt-BR">Portugués 🇧🇷</option>
+                <option value="fr-FR">Francés 🇫🇷</option>
+                <option value="de-DE">Alemán 🇩🇪</option>
                 <option value="es-MX">Español 🇲🇽</option>
+                <option value="auto">Detectar_Idioma 🛰️</option>
               </select>
-              <Globe size={16} className="absolute right-10 top-1/2 -translate-y-1/2 text-zinc-800 pointer-events-none" />
+              <Globe size={16} className="absolute right-8 top-1/2 -translate-y-1/2 text-zinc-800 pointer-events-none" />
             </div>
           </div>
 
-          <div className="space-y-4">
-            <label className="text-[8px] font-black uppercase text-zinc-600 tracking-[0.4em] ml-6">Escala_De_Grupo</label>
-            <div className="flex gap-2 h-[72px]">
+          <div className="space-y-3">
+            <label className="text-[8px] font-black uppercase text-zinc-600 tracking-[0.3em] ml-4">Protocolo_Sesión</label>
+            <div className="flex gap-2 h-[68px]">
               {[
-                { id: 'individual', icon: <User size={16}/>, label: 'Solo' },
-                { id: 'duo', icon: <Users2 size={16}/>, label: 'Duo' },
-                { id: 'trio', icon: <Users size={16}/>, label: 'Trio' }
+                { id: 'individual', icon: <User size={14}/>, label: 'Solo' },
+                { id: 'duo', icon: <Users2 size={14}/>, label: 'Dúo' },
+                { id: 'trio', icon: <Users size={14}/>, label: 'Trio' }
               ].map((m) => (
                 <button 
                   key={m.id} onClick={() => setModality(m.id as any)}
-                  className={`flex-1 rounded-[2.2rem] border-2 transition-all flex items-center justify-center gap-2 ${modality === m.id ? 'bg-white text-black border-white' : 'bg-zinc-950 border-zinc-900 text-zinc-800'}`}
+                  className={`flex-1 rounded-[2rem] border-2 transition-all flex items-center justify-center gap-2 ${modality === m.id ? 'bg-white text-black border-white' : 'bg-zinc-950 border-zinc-900 text-zinc-700'}`}
                 >
                   {m.icon}
-                  <span className="text-[9px] font-[1000] uppercase tracking-tighter">{m.label}</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest">{m.label}</span>
                 </button>
               ))}
             </div>
           </div>
         </div>
 
-        <section className="bg-zinc-950/30 p-8 rounded-[3.5rem] border border-zinc-900/50">
-          <div className="flex flex-wrap justify-center gap-3">
+        <section className="bg-zinc-950/50 p-6 rounded-[3rem] border border-zinc-900 text-center">
+          <div className="flex flex-wrap justify-center gap-2">
             {COLORS_10.map((hex) => (
               <button 
                 key={hex} onClick={() => setSelectedColor(hex)}
-                className={`w-11 h-11 rounded-2xl transition-all relative flex items-center justify-center shadow-lg ${selectedColor === hex ? 'scale-110 ring-2 ring-white/20' : 'opacity-20 hover:opacity-100 hover:scale-105'}`}
+                className={`w-10 h-10 rounded-xl transition-all relative flex items-center justify-center ${selectedColor === hex ? 'scale-110 ring-2 ring-white/30' : 'opacity-30 hover:opacity-100'}`}
                 style={{ backgroundColor: hex }}
               >
-                {selectedColor === hex && <Check color="black" size={20} strokeWidth={4} />}
+                {selectedColor === hex && <Check color="black" size={16} strokeWidth={4} />}
               </button>
             ))}
           </div>
         </section>
 
-        <footer className="pt-6 pb-20 flex flex-col items-center">
+        <footer className="pt-4 pb-12">
           <button
             onClick={handleStart} disabled={isSyncing}
-            className="w-full py-10 rounded-full font-[1000] text-xl uppercase tracking-[0.2em] flex items-center justify-center gap-5 transition-all shadow-2xl active:scale-[0.97] disabled:grayscale disabled:opacity-50"
+            className="w-full py-9 rounded-full font-black text-xl uppercase tracking-tighter flex items-center justify-center gap-4 transition-all shadow-2xl active:scale-[0.98]"
             style={{ backgroundColor: selectedColor, color: 'black' }}
           >
             {isSyncing ? (
-              <Loader2 className="animate-spin" size={32} />
+              <Loader2 className="animate-spin" size={28} />
             ) : (
               <>
-                <span className="tracking-tighter">
-                  {isActuallyAdmin ? 'INICIALIZAR_PROTOCOLO' : (modality === 'individual' ? 'Sincronizar_$50_MXN' : 'Sincronizar_$90_MXN')}
-                </span>
-                <ArrowRight size={28} strokeWidth={3} />
+                <span>{isActuallyAdmin ? 'ENTRAR_SIN_CARGO' : (modality === 'individual' ? 'Pagar_$50_MXN' : 'Pagar_$90_MXN')}</span>
+                <ArrowRight size={24} />
               </>
             )}
           </button>
-          
-          <div className="flex flex-col items-center gap-2 mt-8 opacity-40">
-            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.8em]">
-               Cycle: {isActuallyAdmin ? 'UNLIMITED_SESSION' : '1800_SECONDS_LIMIT'} 
-            </p>
-            <div className="h-[1px] w-24 bg-zinc-900" />
-            <p className="text-[8px] font-black text-zinc-700 uppercase tracking-[0.4em]">
-              Fee_Protocol: {isActuallyAdmin ? 'EXEMPT_MASTER' : (modality === 'individual' ? 'PAY_PER_USE_$50' : 'PAY_PER_GROUP_$90')}
-            </p>
-          </div>
+          <p className="text-center text-[7px] text-zinc-700 uppercase mt-6 tracking-[0.8em]">
+            Time_Allotted: {isActuallyAdmin ? 'UNLIMITED' : '1800_SEC'} // Fee_Status: {isActuallyAdmin ? 'EXEMPT' : 'PENDING'}
+          </p>
         </footer>
       </div>
     </div>

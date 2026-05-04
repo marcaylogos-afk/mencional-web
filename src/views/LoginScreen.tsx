@@ -1,207 +1,196 @@
-/**
- * 🔐 MENCIONAL | LOGIN_SCREEN v2026.12
- * Protocolo: ID Anónimo | Mercado Pago Sync | Temas Trend Comunidad
- * ✅ DIRECTORIO AI: Sincronizado en /src/services/ai/
- * Ruta: /src/views/LoginScreen.tsx
+/** * 🔐 MENCIONAL | LOGIN & CONFIG v2.6 
+ * ✅ DIRECTORIO AI: /src/services/ai/ (Sincronizado: Es ai, no ia)
+ * ✅ LOGO: Desde /public/logo.png.png
+ * ✅ TEMAS TREND: Generados por usuarios en español
+ * ✅ SELECCIÓN: Idioma, Grupo (Individual/Dúo/Trío) y 10 Colores OLED
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Activity, ShieldCheck, User, Crown, ChevronLeft, Lock, Zap 
-} from 'lucide-react';
-
-import { useAuth } from '../hooks/useAuth';
 import { useSettings } from '../context/SettingsContext';
 import { logger } from '../utils/logger';
 
-// Simulación de Temas Trend (Nutridos por sesiones previas)
-const TREND_TOPICS = ["Negocios_IA", "Viaje_Tokyo", "Cena_Networking", "Arquitectura_Sustentable"];
+// --- 🌐 CONFIGURACIÓN DE IDIOMAS ---
+const LANGUAGES = [
+  { code: 'en-US', name: 'Inglés (Prioritario)' },
+  { code: 'fr-FR', name: 'Francés' },
+  { code: 'de-DE', name: 'Alemán' },
+  { code: 'it-IT', name: 'Italiano' },
+  { code: 'pt-BR', name: 'Portugués' },
+  { code: 'es-MX', name: 'Español' },
+  { code: 'auto', name: 'Detectar Idioma' }
+];
 
-export const LoginScreen: React.FC = () => {
+// --- 🎨 PALETA DE 10 COLORES NEÓN (OLED-Ready) ---
+const PALETTE_10 = [
+  '#39FF14', // Verde Neón
+  '#00FBFF', // Cian
+  '#FF00FB', // Magenta
+  '#FFFF00', // Amarillo
+  '#FF3131', // Rojo
+  '#FFFFFF', // Blanco
+  '#8A2BE2', // Violeta
+  '#FFD700', // Dorado
+  '#00FFAB', // Turquesa
+  '#FF5E00'  // Naranja
+];
+
+// --- 📈 TEMAS TREND & SESIONES FUTURAS ---
+const TREND_SESSIONS = [
+  { topic: "Cena_Networking", phrase: "Me gustaría proponer una colaboración profesional" },
+  { topic: "Viaje_Tokyo", phrase: "Busco recomendaciones de lugares tradicionales" },
+  { topic: "Arquitectura_Sustentable", phrase: "El diseño OLED optimiza el consumo de energía" }
+];
+
+export const LoginScreen = () => {
   const navigate = useNavigate();
-  const { loginAsAdmin, loginAsParticipant } = useAuth(); 
-  const { updateSettings } = useSettings();
-  
-  const [pass, setPass] = useState("");
-  const [userName, setUserName] = useState("");
-  const [sessionName, setSessionName] = useState("");
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [anonymousId, setAnonymousId] = useState("");
-  const [viewMode, setViewMode] = useState<'CHOICE' | 'PARTICIPANTE_CONFIG' | 'ADMIN_INPUT'>('CHOICE');
-  const [error, setError] = useState(false);
+  const { settings, updateSettings } = useSettings();
+  const [step, setStep] = useState<'WELCOME' | 'CONFIG'>('WELCOME');
 
-  useEffect(() => {
-    const savedId = localStorage.getItem('mencional_device_id');
-    const id = savedId || `NODE-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-    if (!savedId) localStorage.setItem('mencional_device_id', id);
-    setAnonymousId(id);
-    
-    // Optimización OLED: Fondo Negro Puro
-    document.body.style.backgroundColor = '#000000';
-  }, []);
-
-  /**
-   * 👤 FLUJO PARTICIPANTE
-   * Configura la sesión y redirige a la pasarela de pago ($20 MXN)
-   */
-  const handleParticipantEntry = useCallback(() => {
-    setIsLoggingIn(true);
-    updateSettings({ 
-      userName: userName || "Anónimo", 
-      sessionName: sessionName || "Sesión_Mencional" 
-    });
-    
-    logger.info("LOGIN_PARTICIPANT", `Iniciando nodo: ${anonymousId}`);
-
-    setTimeout(() => {
-      loginAsParticipant(anonymousId);
-      // Redirección directa al link oficial de Mercado Pago proporcionado
-      window.location.href = "https://mpago.la/2fPScDJ"; 
-    }, 1200);
-  }, [userName, sessionName, anonymousId, loginAsParticipant, updateSettings]);
-
-  /**
-   * 🔑 FLUJO ADMIN (ACCESO MAESTRO)
-   */
-  const handleAdminLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pass === 'osos') { // Clave de acceso maestro
-      setIsLoggingIn(true);
-      loginAsAdmin();
-      logger.info("LOGIN_ADMIN", "Acceso maestro verificado.");
-      setTimeout(() => navigate('/selector'), 1000);
-    } else {
-      setError(true);
-      setTimeout(() => setError(false), 2000);
-    }
+  const handleStartSession = () => {
+    logger.info("NAVIGATION", "Entrando al Dashboard Principal desde el nodo /ai/");
+    navigate('/learning-live');
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans select-none">
+    <div className="bg-[#000000] min-h-screen text-white p-6 flex flex-col items-center font-sans overflow-y-auto">
       
-      {/* 🌌 AMBIENTE OLED */}
-      <div className="absolute inset-0 pointer-events-none opacity-20">
-        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-[#00FBFF]/10 blur-[120px] rounded-full animate-pulse" />
+      {/* 🟢 LOGO E IDENTIDAD MENCIONAL */}
+      <div className="flex flex-col items-center mt-10 mb-8">
+        <img 
+          src="/logo.png" 
+          className="w-20 h-20 mb-4 animate-pulse" 
+          alt="Mencional Logo" 
+        />
+        <h1 className="text-4xl font-black italic uppercase tracking-tighter">Mencional</h1>
+        <p className="text-[8px] font-bold tracking-[0.5em] text-zinc-600 uppercase mt-2">Neural_Immersion_v2.6</p>
       </div>
 
-      <div className="z-10 w-full max-w-sm flex flex-col items-center">
-        
-        {/* BRANDING MENCIONAL */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center mb-10 text-center">
-          <div className="w-20 h-20 bg-zinc-900 rounded-3xl flex items-center justify-center border border-white/5 mb-6 shadow-[0_0_30px_rgba(0,251,255,0.2)]">
-             <span className="text-[#00FBFF] font-black text-3xl">M</span>
+      {step === 'WELCOME' ? (
+        <div className="w-full max-w-md space-y-6">
+          {/* SECCIÓN DE TENDENCIAS (Generadas por participantes) */}
+          <div className="grid grid-cols-1 gap-4">
+            <p className="text-[10px] font-black opacity-40 tracking-[0.3em] ml-2">TENDENCIAS_DE_SESIONES</p>
+            {TREND_SESSIONS.map((trend) => (
+              <button 
+                key={trend.topic}
+                onClick={() => {
+                  updateSettings({ sessionName: trend.topic, activeTopic: trend.topic });
+                  setStep('CONFIG');
+                }}
+                className="bg-zinc-950 border border-zinc-900 p-6 rounded-[2rem] text-left hover:border-[#39FF14] transition-all group"
+              >
+                <h3 className="text-xl font-black text-[#39FF14] uppercase">{trend.topic}</h3>
+                <p className="text-sm text-zinc-500 italic mt-1 group-hover:text-white">"{trend.phrase}"</p>
+              </button>
+            ))}
           </div>
-          <h1 className="text-4xl font-[1000] tracking-tighter italic uppercase leading-none">
-            MENCIONAL<span className="text-[#00FBFF]">.</span>
-          </h1>
-          <p className="text-[8px] tracking-[0.4em] font-black uppercase mt-3 text-zinc-600 italic">
-            Neural_Core_v26.12_OLED
-          </p>
-        </motion.div>
-
-        <AnimatePresence mode="wait">
-          {viewMode === 'CHOICE' ? (
-            <motion.div key="choice" className="w-full space-y-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.95 }}>
-              <button 
-                onClick={() => setViewMode('PARTICIPANTE_CONFIG')}
-                className="w-full py-6 bg-white text-black rounded-[2.5rem] font-[1000] uppercase tracking-widest text-xs flex items-center justify-center gap-4 hover:bg-[#00FBFF] transition-all active:scale-95"
-              >
-                <User size={18} /> INICIAR APRENDIZAJE
-              </button>
-              <button 
-                onClick={() => setViewMode('ADMIN_INPUT')}
-                className="w-full py-5 bg-zinc-950/20 border-2 border-white/5 text-zinc-500 rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-[9px] flex items-center justify-center gap-4 hover:border-white/10 transition-all"
-              >
-                <Crown size={14} /> ACCESO_MASTER
-              </button>
-            </motion.div>
-          ) : viewMode === 'PARTICIPANTE_CONFIG' ? (
-            <motion.div key="config" className="w-full space-y-6" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -50, opacity: 0 }}>
-              <div className="space-y-2">
-                <input 
-                  type="text" placeholder="NOMBRE_FICTICIO" 
-                  autoFocus
-                  onChange={(e) => setUserName(e.target.value)}
-                  className="w-full bg-zinc-900/50 border border-white/10 p-5 rounded-2xl text-center font-black uppercase text-[10px] tracking-widest outline-none focus:border-[#00FBFF] transition-colors" 
-                />
-                <input 
-                  type="text" placeholder="NOMBRE_DE_SESIÓN" 
-                  value={sessionName}
-                  onChange={(e) => setSessionName(e.target.value)}
-                  className="w-full bg-zinc-900/50 border border-white/10 p-5 rounded-2xl text-center font-black uppercase text-[10px] tracking-widest outline-none focus:border-[#00FBFF] transition-colors" 
-                />
-              </div>
-
-              {/* TEMAS TREND DE LA COMUNIDAD */}
-              <div className="flex flex-wrap justify-center gap-2 py-2">
-                {TREND_TOPICS.map(topic => (
-                  <button 
-                    key={topic} 
-                    onClick={() => setSessionName(topic)}
-                    className="text-[8px] font-black uppercase bg-zinc-950 border border-white/5 px-4 py-2 rounded-full text-zinc-500 hover:text-[#00FBFF] hover:border-[#00FBFF]/30 transition-all"
-                  >
-                    <Zap size={8} className="inline mr-1" /> {topic}
-                  </button>
-                ))}
-              </div>
-
-              <button 
-                onClick={handleParticipantEntry}
-                disabled={isLoggingIn}
-                className="w-full py-6 bg-[#00FBFF] text-black rounded-[2.5rem] font-[1000] uppercase text-xs shadow-[0_0_30px_rgba(0,251,255,0.3)]"
-              >
-                {isLoggingIn ? <Activity className="animate-spin mx-auto" /> : "IR A PAGO_SEGURO"}
-              </button>
-              
-              <button onClick={() => setViewMode('CHOICE')} className="w-full text-[8px] font-black text-zinc-600 uppercase text-center tracking-[0.3em] hover:text-white transition-colors">
-                <ChevronLeft size={10} className="inline mr-1" /> REGRESAR
-              </button>
-            </motion.div>
-          ) : (
-            /* Lógica Admin */
-            <motion.form 
-              key="admin" 
-              onSubmit={handleAdminLogin} 
-              className="w-full space-y-6"
-              initial={{ y: 20, opacity: 0 }} 
-              animate={{ y: 0, opacity: 1 }}
-            >
-              <div className="relative">
-                <input 
-                  type="password" 
-                  placeholder="CONTRASEÑA_MAESTRA"
-                  autoFocus
-                  value={pass}
-                  onChange={(e) => setPass(e.target.value)}
-                  className={`w-full bg-zinc-900/50 border ${error ? 'border-red-500' : 'border-white/10'} p-5 rounded-2xl text-center font-black text-[12px] tracking-[0.5em] outline-none focus:border-[#39FF14] transition-all`}
-                />
-                {error && <p className="text-red-500 text-[8px] font-black uppercase text-center mt-2 tracking-widest">Credencial Incorrecta</p>}
-              </div>
-
-              <button 
-                type="submit"
-                className="w-full py-6 bg-[#39FF14] text-black rounded-[2.5rem] font-[1000] uppercase text-xs shadow-[0_0_30px_rgba(57,255,20,0.3)]"
-              >
-                {isLoggingIn ? <Activity className="animate-spin mx-auto" /> : "SINCRONIZAR_MODO_MAESTRO"}
-              </button>
-
-              <button onClick={() => setViewMode('CHOICE')} className="w-full text-[8px] font-black text-zinc-600 uppercase text-center tracking-[0.3em] hover:text-white transition-colors">
-                <ChevronLeft size={10} className="inline mr-1" /> REGRESAR
-              </button>
-            </motion.form>
-          )}
-        </AnimatePresence>
-
-        <div className="mt-10 flex flex-col items-center gap-4 opacity-30">
-          <div className="flex items-center gap-3 px-4 py-2 bg-zinc-950 rounded-full border border-white/5">
-            <span className="text-[7px] font-mono text-zinc-500 uppercase tracking-[0.3em]">LINK_ID: {anonymousId}</span>
-          </div>
+          
+          <button 
+            onClick={() => setStep('CONFIG')}
+            className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-[#39FF14] transition-colors"
+          >
+            Configurar Sesión de 1 Hora ($90 MXN)
+          </button>
         </div>
-      </div>
+      ) : (
+        <div className="w-full max-w-xl bg-zinc-950 p-10 rounded-[3rem] border border-zinc-900 space-y-8 mb-10">
+          
+          {/* 1. SELECCIÓN DE GRUPO (Individual/Dúo/Trío) */}
+          <div className="space-y-4">
+            <p className="text-[10px] font-black opacity-40 tracking-[0.2em]">MODO_PARTICIPACIÓN</p>
+            <div className="flex gap-4">
+              {['Individual', 'Dúo', 'Trío'].map(mode => (
+                <button 
+                  key={mode}
+                  onClick={() => updateSettings({ groupMode: mode as any })}
+                  className={`flex-1 py-4 rounded-2xl border font-bold transition-all ${
+                    settings.groupMode === mode 
+                      ? 'border-[#39FF14] bg-[#39FF14]/10 text-[#39FF14]' 
+                      : 'border-zinc-800 text-zinc-500'
+                  }`}
+                >
+                  {mode}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 2. SELECCIÓN DE IDIOMA TARGET */}
+          <div className="space-y-4">
+            <p className="text-[10px] font-black opacity-40 tracking-[0.2em]">IDIOMA_TARGET</p>
+            <select 
+              className="w-full bg-black border border-zinc-800 p-4 rounded-2xl text-white outline-none focus:border-[#39FF14]"
+              value={settings.targetLanguage}
+              onChange={(e) => updateSettings({ targetLanguage: e.target.value })}
+            >
+              {LANGUAGES.map(lang => (
+                <option key={lang.code} value={lang.code}>{lang.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* 3. PERSONALIZACIÓN OLED (10 Colores) */}
+          <div className="space-y-4">
+            <p className="text-[10px] font-black opacity-40 tracking-[0.2em]">PALETA_COLORES_OLED</p>
+            <div className="flex flex-wrap gap-3">
+              {PALETTE_10.map(color => (
+                <button 
+                  key={color} 
+                  onClick={() => updateSettings({ themeColor: color })}
+                  className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${
+                    settings.themeColor === color ? 'border-white' : 'border-transparent'
+                  }`} 
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* 4. IDENTIDAD DEL PARTICIPANTE */}
+          <div className="space-y-4">
+            <p className="text-[10px] font-black opacity-40 tracking-[0.2em]">IDENTIDAD_ROOT</p>
+            <input 
+              type="text" 
+              placeholder="TU_NOMBRE_FICTICIO"
+              className="w-full bg-black border border-zinc-800 p-4 rounded-2xl text-white focus:border-[#39FF14] outline-none"
+              value={settings.userAlias}
+              onChange={(e) => updateSettings({ userAlias: e.target.value })}
+            />
+          </div>
+
+          {/* 🟢 BOTÓN DE INICIO INMEDIATO */}
+          <button 
+            onClick={handleStartSession}
+            className="w-full py-6 bg-[#39FF14] text-black rounded-2xl font-[1000] uppercase shadow-[0_0_30px_rgba(57,255,20,0.3)] hover:scale-[1.02] transition-transform"
+          >
+            Iniciar Sesión Inmediata
+          </button>
+          
+          <button 
+            onClick={() => setStep('WELCOME')}
+            className="w-full text-[10px] font-black text-zinc-600 uppercase tracking-widest"
+          >
+            ‹ Regresar a Tendencias
+          </button>
+        </div>
+      )}
+
+      {/* FOOTER TÉCNICO */}
+      <footer className="mt-auto py-10 opacity-20 flex flex-col items-center gap-2">
+        <div className="flex items-center gap-4">
+          <span className="text-[7px] font-black uppercase tracking-[0.4em]">Services_Node: /src/services/ai/</span>
+        </div>
+        <div className="flex gap-2">
+          {['#IA_COSTO_BENEFICIO', '#NETWORKING_PREMIUM', '#SINCRO_NEURAL', '#MERCADOPAGO_V2'].map(tag => (
+            <span key={tag} className="text-[6px] border border-white/20 px-2 py-1 rounded">
+              {tag}
+            </span>
+          ))}
+        </div>
+      </footer>
     </div>
   );
 };
 
-export default LoginScreen;
+export default LoginScreen; // Exportación por defecto para evitar SyntaxError

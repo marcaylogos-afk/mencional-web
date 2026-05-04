@@ -1,8 +1,9 @@
 /** 🛣️ MENCIONAL | APP_ROUTER v2026.PROD
  * Orquestación de Vistas y Jerarquía de Modos (Aprendizaje / Ultra / Rompehielo)
  * Ubicación: /src/router/AppRouter.tsx
- * ✅ UPDATE: Protocolo de acceso estricto (Admin vs Guest/Participant).
- * ✅ UPDATE: Sincronización de flujo de Evaluación y Diagnóstico.
+ * ✅ FIX: Eliminado EvaluationTest (Archivo inexistente).
+ * ✅ FIX: Acceso diferenciado por perfil (Admin vs Guest) y Bypass Maestro.
+ * ✅ MONETIZACIÓN: Redirección automática si Admin intenta entrar a Checkout.
  */
 
 import React from "react";
@@ -19,28 +20,25 @@ import AdminDashboard from "../views/AdminDashboard";
 import SessionSetup from "../views/SessionSetup";
 import PaymentGateway from "../views/PaymentGateway";
 import SessionSelector from "../views/SessionSelector";
-import EvaluationTest from "../views/EvaluationTest"; 
-import EvaluationResults from "../views/EvaluationResults"; 
 
 const AppRouter: React.FC = () => {
   const { settings } = useSettings();
 
   /**
    * 🛡️ PROTOCOLO DE ACCESO MENCIONAL 2026
-   * Admin: Acceso total ilimitado tras validación "Master Key".
-   * Participant: Acceso tras validación de pago ($90 MXN).
+   * Admin: Acceso total ilimitado tras ingresar MASTER_KEY.
+   * Guest: Sesión de 30 min por $50 MXN tras validación de pago.
    */
   const isAdmin = settings?.role === 'admin' || settings?.isUnlimited === true;
   const hasPaidAccess = settings?.isPaid === true;
   const canAccessCore = isAdmin || hasPaidAccess;
 
-  // ✅ BLINDAJE OLED DE CARGA (Failsafe)
+  // ✅ BLINDAJE OLED DE CARGA: Muestra el estado mientras se sincronizan los servicios AI
   if (!settings) {
     return (
-      <div className="bg-black min-h-screen flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-[1px] bg-[#00FBFF] animate-pulse" />
-        <div className="text-[#00FBFF] text-[10px] tracking-[0.8em] italic uppercase opacity-50">
-          Sincronizando_Servicios_AI
+      <div className="bg-[#000000] min-h-screen flex items-center justify-center">
+        <div className="text-[#00FBFF] text-[10px] tracking-[0.8em] animate-pulse italic uppercase">
+          Sincronizando_Servicios_AI...
         </div>
       </div>
     );
@@ -48,70 +46,58 @@ const AppRouter: React.FC = () => {
 
   return (
     <Routes>
-      {/* 🏠 PUERTA DE ENLACE: Único punto de entrada sin credenciales */}
+      {/* 🏠 BIENVENIDA: Punto de entrada para MASTER_KEY y GUEST_KEY */}
       <Route path="/" element={<WelcomeGate />} />
 
-      {/* 💳 PASARELA: Si es Admin, salta directo al Hub. Si ya pagó, también. */}
+      {/* 💳 CHECKOUT: Bypass automático para el Administrador */}
       <Route 
         path="/checkout" 
-        element={canAccessCore ? <Navigate to="/selector" replace /> : <PaymentGateway />} 
+        element={isAdmin ? <Navigate to="/selector" replace /> : <PaymentGateway />} 
       />
 
-      {/* 🎯 HUB CENTRAL: Punto de bifurcación de la experiencia */}
+      {/* 🆕 SELECTOR DE INTENCIÓN: Acceso administrativo inmediato */}
+      <Route 
+        path="/selector-intencion" 
+        element={isAdmin ? <IntentSelector /> : <Navigate to="/checkout" replace />} 
+      />
+
+      {/* 🎯 SELECTOR CENTRAL: Filtra modos según el rol */}
       <Route 
         path="/selector" 
         element={canAccessCore ? <SessionSelector /> : <Navigate to="/" replace />} 
       />
 
-      {/* 🆕 SELECTOR DE INTENCIÓN: Sub-capa de configuración */}
-      <Route 
-        path="/selector-intencion" 
-        element={canAccessCore ? <IntentSelector /> : <Navigate to="/checkout" replace />} 
-      />
-
-      {/* ⚙️ SETUP: Configuración de idiomas y niveles */}
+      {/* ⚙️ SETUP: Configuración de 30 min / $50 MXN */}
       <Route 
         path="/setup" 
         element={canAccessCore ? <SessionSetup /> : <Navigate to="/checkout" replace />} 
       />
 
-      {/* 🎓 MODO APRENDIZAJE: Inmersión total inicial */}
+      {/* 🎓 MODO APRENDIZAJE: Disponible para todos los perfiles validados */}
       <Route 
         path="/learning" 
         element={canAccessCore ? <LearningMode /> : <Navigate to="/selector" replace />} 
       />
 
-      {/* 🚀 MODO ULTRA: Traducción selectiva basada en Escudo Neural */}
+      {/* 🚀 MODO ULTRA: Restringido estrictamente a Administrador */}
       <Route 
         path="/ultra" 
-        element={canAccessCore ? <UltraInterpreter /> : <Navigate to="/selector" replace />} 
+        element={isAdmin ? <UltraInterpreter /> : <Navigate to="/selector" replace />} 
       />
 
-      {/* 🍻 MODO ROMPEHIELO: Soporte social de baja latencia */}
+      {/* 🍻 MODO ROMPEHIELO: Restringido estrictamente a Administrador */}
       <Route 
         path="/rompehielo" 
-        element={canAccessCore ? <RompehieloMode /> : <Navigate to="/selector" replace />} 
+        element={isAdmin ? <RompehieloMode /> : <Navigate to="/selector" replace />} 
       />
 
-      {/* 🧠 TEST DE EVALUACIÓN: Diagnóstico para calibrar el Modo Ultra */}
-      <Route 
-        path="/evaluation" 
-        element={canAccessCore ? <EvaluationTest /> : <Navigate to="/" replace />} 
-      />
-
-      {/* 📊 RESULTADOS: Visualización de métricas de dominio */}
-      <Route 
-        path="/results" 
-        element={canAccessCore ? <EvaluationResults /> : <Navigate to="/" replace />} 
-      />
-
-      {/* 🖥️ DASHBOARD: Panel de control exclusivo para el Administrador */}
+      {/* 🖥️ DASHBOARD: Panel de control administrativo */}
       <Route 
         path="/admin" 
         element={isAdmin ? <AdminDashboard /> : <Navigate to="/selector" replace />} 
       />
 
-      {/* 🛰️ FAILSAFE: Cualquier ruta no definida colapsa al inicio */}
+      {/* 🛰️ FAILSAFE: Redirección automática a Bienvenida */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

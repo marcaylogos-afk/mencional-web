@@ -1,13 +1,13 @@
-/** * ⚡ MENCIONAL | WELCOME_SELECTOR v2026.PROD
+/** ⚡ MENCIONAL | WELCOME_SELECTOR v2026.PROD
  * Protocolo: Participante -> Pasarela MP | Nodo Maestro -> Validación "osos"
  * Ubicación: /src/views/WelcomeSelector.tsx
  */
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSettings } from '../context/SettingsContext';
-import { CreditCard, Zap, Lock, Eye, EyeOff, Shield, ChevronRight } from 'lucide-react';
+import { CreditCard, Zap, Lock, Eye, EyeOff, Shield, ChevronRight, AlertCircle } from 'lucide-react';
 import speechService from '../services/ai/speechService';
 import { logger } from '../utils/logger';
 
@@ -20,6 +20,7 @@ const WelcomeSelector: React.FC = () => {
   const [error, setError] = useState(false);
   
   // 💳 Pasarela oficial de Mercado Pago para bloques de 30 min ($50 MXN)
+  // Actualizado según el protocolo de recaudación v2.6
   const MP_PAYMENT_URL = "https://mpago.la/1isA1oL";
 
   useEffect(() => {
@@ -96,7 +97,7 @@ const WelcomeSelector: React.FC = () => {
              className="absolute -inset-4 bg-[#00FBFF]/10 rounded-full blur-2xl group-hover:bg-[#00FBFF]/20 transition-all" 
           />
           <img 
-            src="/logo.png" 
+            src="/logo.png.png" 
             alt="Mencional Logo" 
             className="w-28 h-28 object-contain relative z-10 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
           />

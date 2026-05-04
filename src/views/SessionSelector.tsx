@@ -1,28 +1,29 @@
-/**
- * 🎛️ MENCIONAL | SESSION_SELECTOR v2026.PROD
- * Función: Configuración pre-inmersión obligatoria (Mencional, Ultra, Rompehielo).
- * Estética: OLED High-Contrast con Azul Claro Neón Bold (#00FBFF).
- * ✅ DIRECTORIO AI: Sincronizado en /src/services/ai/
- * ✅ RESPONSIVE: Scroll habilitado y padding de seguridad para móviles.
+/** 🎛️ MENCIONAL | SESSION_SELECTOR v2026.PROD
+ * Función: Configuración pre-inmersión y acceso directo a modos.
+ * Estética: OLED High-Contrast con Azul Claro Neón (#00FBFF).
  */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Activity } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { 
+  ChevronRight, 
+  Palette, 
+  Zap, 
+  BrainCircuit, 
+  ShieldCheck, 
+  Target 
+} from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
-
-/** 🎙️ SERVICIOS SINCRONIZADOS: Ruta corregida a /ai/ */
 import speechService from '../services/ai/speechService'; 
-import translateCache from '../services/ai/translateCache'; 
 import { logger } from '../utils/logger';
 
 const AVAILABLE_LANGUAGES = [
-  { code: 'en-US', name: 'Inglés', flag: '🇺🇸' },
+  { code: 'en-US', name: 'Inglés (Prioritario)', flag: '🇺🇸' },
   { code: 'fr-FR', name: 'Francés', flag: '🇫🇷' },
   { code: 'de-DE', name: 'Alemán', flag: '🇩🇪' },
   { code: 'it-IT', name: 'Italiano', flag: '🇮🇹' },
   { code: 'pt-BR', name: 'Portugués', flag: '🇧🇷' },
-  { code: 'es-MX', name: 'Español', flag: '🇲🇽' },
-  { code: 'auto', name: 'Detectar', flag: '🛰️' }
+  { code: 'es-MX', name: 'Español', flag: '🇲🇽' }
 ];
 
 const SessionSelector: React.FC = () => {
@@ -36,198 +37,193 @@ const SessionSelector: React.FC = () => {
   ];
 
   useEffect(() => {
-    // Sincronización con caché de tendencias AI
-    const localizedTrends = translateCache.getTrendingPhrases?.() || [
-      "¿Cómo sonar más natural en juntas?",
-      "Preparación para entrevistas IT",
+    setTrends([
+      "Networking para perfiles Tech",
       "Inglés para negociaciones rápidas",
-      "Frases de networking",
-      "Sincronización Aoede"
-    ];
-    setTrends(localizedTrends);
+      "Frases para romper el hielo en cenas",
+      "Sincronización Aoede: Voces Nativas",
+      "Terminología AI y Machine Learning"
+    ]);
     
-    logger.info("VIEW_MOUNT", "SessionSelector cargado correctamente.");
+    if (!settings.userAlias) {
+      speechService.speak("Identificador de nodo requerido.", 'es-MX');
+    }
   }, []);
 
-  /** ✅ PROTOCOLO DE INICIO SEGURO: Evita bucles por fallos de audio */
   const handleStartSession = async () => {
     const mode = settings.activeMode || 'learning';
     
-    // 1. Navegación inmediata (Prioridad de UX)
-    const targetPath = `/${mode}`;
-    
+    // ✅ BYPASS DE SESIÓN: Acceso directo sin test obligatorio
     try {
-      // 2. Intento de feedback de audio (puede fallar por políticas de navegador)
-      const feedbackMsg = mode === 'ultra' ? "Ultra-Mencional sincronizado." : 
-                          mode === 'rompehielo' ? "Modo Rompehielo activo." : 
-                          "Iniciando Modo Mencional.";
+      const messages: Record<string, string> = {
+        learning: "Iniciando Modo Aprendizaje.",
+        ultra: "Ultra-Mencional sincronizado.",
+        rompehielo: "Modo Rompehielo activo."
+      };
 
-      // No usamos 'await' aquí para que la navegación no dependa del audio
-      speechService.speak(feedbackMsg, { lang: 'es-MX', rate: 1.1 })
-        .catch(e => logger.warn("AUDIO_SILENCED", "Navegador bloqueó autoplay de voz."));
-
-      logger.info("SESSION_START", `Modo ${mode} iniciado.`);
-      navigate(targetPath);
+      await speechService.speak(messages[mode] || "Sincronizando.", 'es-MX');
+      logger.info("SESSION_START", `Acceso directo a ${mode}`);
+      navigate(`/${mode}`); 
     } catch (error) {
-      logger.error("NAV_ERROR", "Fallo crítico en transición", error);
-      navigate(targetPath); // Backup de navegación
+      navigate(`/${mode}`);
     }
   };
 
   return (
-    <div className="h-full min-h-screen w-full bg-black text-white p-6 flex flex-col font-sans select-none italic overflow-y-auto overflow-x-hidden relative">
-      {/* Capa de efecto visual CRT/OLED */}
-      <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03] bg-scanlines" />
-
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 relative z-10 gap-6">
-        <div className="flex items-center gap-4">
-          <img src="/logo.png" alt="Mencional" className="w-12 h-12 object-contain drop-shadow-[0_0_20px_rgba(0,251,255,0.3)]" />
-          <h1 className="text-3xl font-[1000] tracking-tighter uppercase text-[#00FBFF]">Mencional</h1>
+    <div className="min-h-screen w-full bg-black text-white p-6 md:p-12 flex flex-col font-sans italic overflow-y-auto selection:bg-[#00FBFF] selection:text-black">
+      
+      {/* HEADER: Identidad OLED + Botón de Pulido Diario */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-8">
+        <div className="flex items-center gap-5">
+          <div className="w-16 h-16 bg-[#00FBFF]/10 rounded-2xl flex items-center justify-center border border-[#00FBFF]/20 shadow-[0_0_30px_rgba(0,251,255,0.15)]">
+            <Zap size={32} className="text-[#00FBFF] fill-[#00FBFF]" />
+          </div>
+          <div>
+            <h1 className="text-5xl font-[1000] tracking-tighter uppercase text-[#00FBFF]">Mencional</h1>
+            <div className="flex items-center gap-2">
+               <p className="text-[8px] tracking-[0.8em] text-zinc-600 font-black uppercase">Core_Neural_v2.6</p>
+               {/* 🧠 BOTÓN DE PULIDO DIARIO (Opcional) */}
+               <button 
+                 onClick={() => navigate('/evaluation')}
+                 className="flex items-center gap-1 px-2 py-0.5 bg-zinc-900 border border-zinc-800 rounded-full hover:border-[#39FF14] transition-colors group"
+               >
+                 <BrainCircuit size={10} className="text-zinc-500 group-hover:text-[#39FF14]" />
+                 <span className="text-[7px] font-black text-zinc-500 group-hover:text-[#39FF14] uppercase">Entrenamiento_Neural</span>
+               </button>
+            </div>
+          </div>
         </div>
         
-        <div className="flex flex-col items-end w-full md:w-auto">
-          <label className="text-[#00FBFF] text-[10px] font-black uppercase tracking-widest mb-1 opacity-80">Identificador_Ficticio</label>
-          <input 
-            type="text" 
-            placeholder="NODO_MAESTRO"
-            value={settings.userAlias || ''}
-            className="bg-zinc-950 border-2 border-[#00FBFF]/30 rounded-xl px-4 py-3 text-[10px] font-bold uppercase tracking-widest focus:border-[#39FF14] outline-none text-[#39FF14] w-full md:w-48 transition-all placeholder:text-[#00FBFF]/20"
-            onChange={(e) => updateSettings({ userAlias: e.target.value })}
-          />
+        <div className="flex gap-4 w-full md:w-auto">
+          <div className="bg-zinc-950 border border-zinc-900 rounded-3xl p-4 space-y-1 focus-within:border-[#00FBFF] transition-colors shadow-2xl w-full md:w-72">
+            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest block">Operador_ID</span>
+            <input 
+              type="text" 
+              value={settings.userAlias || ''}
+              className="bg-transparent w-full text-sm font-black uppercase tracking-widest outline-none text-[#39FF14] placeholder:text-zinc-800"
+              placeholder="MAINFRAME_USER"
+              onChange={(e) => updateSettings({ userAlias: e.target.value.toUpperCase() })}
+            />
+          </div>
         </div>
       </header>
 
-      <main className="grid grid-cols-1 lg:grid-cols-3 gap-12 flex-1 relative z-10 pb-20">
-        {/* COLUMNA 1: FUNCIÓN Y GRUPO */}
-        <section className="space-y-10 text-left">
-          <div className="space-y-4">
-            <span className="text-[#00FBFF] uppercase text-[11px] font-black tracking-[0.4em] block border-b border-[#00FBFF]/20 pb-2">1. Función_Nodo</span>
-            <div className="grid gap-3">
-              {[
-                { id: 'learning', label: 'Mencional (Aprendizaje)' },
-                { id: 'ultra', label: 'Ultra-Mencional' },
-                { id: 'rompehielo', label: 'Rompehielo' }
-              ].map((m) => (
-                <button 
-                  key={m.id}
-                  onClick={() => updateSettings({ activeMode: m.id as any })}
-                  className={`p-6 rounded-2xl border-2 text-left transition-all duration-300 ${
-                    settings.activeMode === m.id 
-                    ? 'border-[#39FF14] bg-[#39FF14]/5 shadow-[0_0_15px_rgba(57,255,20,0.15)]' 
-                    : 'border-zinc-900 hover:border-[#00FBFF]/50'
-                  }`}
-                >
-                  <span className={`block font-black uppercase text-xs tracking-wider ${settings.activeMode === m.id ? 'text-white' : 'text-[#00FBFF]'}`}>
-                    {m.label}
-                  </span>
-                </button>
-              ))}
-            </div>
+      <main className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-12">
+        
+        {/* COLUMNA 1: FUNCIÓN */}
+        <section className="lg:col-span-4 space-y-8">
+          <div className="flex items-center gap-4 border-l-4 border-[#00FBFF] pl-4">
+            <h2 className="text-[#00FBFF] uppercase text-[10px] font-black tracking-[0.4em]">01_Protocolo_Inmersión</h2>
           </div>
-
-          <div className="space-y-4">
-            <span className="text-[#00FBFF] uppercase text-[11px] font-black tracking-[0.4em] block border-b border-[#00FBFF]/20 pb-2">2. Configuración_Grupo</span>
-            <div className="flex gap-2">
-              {['Individual', 'Dúo', 'Trío'].map((g) => (
-                <button 
-                  key={g}
-                  onClick={() => updateSettings({ groupMode: g as any })}
-                  className={`flex-1 py-4 rounded-xl border-2 font-black text-[11px] uppercase transition-all duration-300 ${
-                    settings.groupMode === g 
-                    ? 'border-[#00FBFF] bg-[#00FBFF] text-black' 
-                    : 'border-zinc-800 text-[#00FBFF] hover:border-[#00FBFF]'
-                  }`}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
+          <div className="grid gap-4">
+            {[
+              { id: 'learning', label: 'Modo Aprendizaje', desc: 'Traducción 100% + Audio' },
+              { id: 'ultra', label: 'Ultra Intérprete', desc: 'Inmersión Selectiva (Neural)', icon: <Target size={14}/> },
+              { id: 'rompehielo', label: 'Modo Rompehielo', desc: 'Social Trend Suggestions' }
+            ].map((m) => (
+              <button 
+                key={m.id}
+                onClick={() => updateSettings({ activeMode: m.id as any })}
+                className={`p-6 rounded-[2rem] border transition-all text-left relative overflow-hidden group ${
+                  settings.activeMode === m.id 
+                  ? 'border-[#39FF14] bg-[#39FF14]/5 shadow-[0_0_30px_rgba(57,255,20,0.05)]' 
+                  : 'border-zinc-900 hover:border-zinc-700 opacity-40'
+                }`}
+              >
+                <div className="flex justify-between items-start mb-2">
+                   <span className="font-black uppercase text-xs tracking-wider text-white">{m.label}</span>
+                   {m.id === 'ultra' && <span className="text-[#00FBFF]">{m.icon}</span>}
+                </div>
+                <span className="text-[9px] text-zinc-500 uppercase font-bold tracking-tight">{m.desc}</span>
+              </button>
+            ))}
           </div>
         </section>
 
-        {/* COLUMNA 2: IDIOMA Y ESTÉTICA */}
-        <section className="space-y-10 text-left">
-          <div className="space-y-4">
-            <span className="text-[#00FBFF] uppercase text-[11px] font-black tracking-[0.4em] block border-b border-[#00FBFF]/20 pb-2">3. Idioma_Prioritario</span>
+        {/* COLUMNA 2: CONFIGURACIÓN */}
+        <section className="lg:col-span-4 space-y-8">
+          <div className="flex items-center gap-4 border-l-4 border-[#00FBFF] pl-4">
+            <h2 className="text-[#00FBFF] uppercase text-[10px] font-black tracking-[0.4em]">02_Parámetros_Físicos</h2>
+          </div>
+          
+          <div className="space-y-6">
             <div className="grid grid-cols-2 gap-3">
               {AVAILABLE_LANGUAGES.map((lang) => (
                 <button 
                   key={lang.code}
                   onClick={() => updateSettings({ targetLanguage: lang.code })}
-                  className={`p-4 rounded-xl border-2 flex items-center gap-3 transition-all duration-300 ${
+                  className={`p-4 rounded-2xl border flex items-center gap-3 transition-all ${
                     settings.targetLanguage === lang.code 
-                    ? 'border-cyan-400 bg-cyan-400/5 shadow-[0_0_15px_rgba(0,251,255,0.1)]' 
-                    : 'border-zinc-900 opacity-60 hover:border-[#00FBFF]/50'
+                    ? 'border-white bg-white/5 shadow-[0_0_20px_rgba(255,255,255,0.05)]' 
+                    : 'border-zinc-900 opacity-40 hover:opacity-100'
                   }`}
                 >
                   <span className="text-xl">{lang.flag}</span>
-                  <span className="text-[10px] font-black uppercase tracking-tighter text-[#00FBFF]">{lang.name}</span>
+                  <span className="text-[9px] font-black uppercase tracking-tighter">{lang.name.split(' ')[0]}</span>
                 </button>
               ))}
             </div>
-          </div>
 
-          <div className="space-y-4">
-            <span className="text-[#00FBFF] uppercase text-[11px] font-black tracking-[0.4em] block border-b border-[#00FBFF]/20 pb-2">4. Estética_OLED</span>
-            <div className="grid grid-cols-5 gap-2">
-              {oledColors.map((c) => (
-                <button 
-                  key={c} 
-                  onClick={() => updateSettings({ themeColor: c })}
-                  className="h-10 rounded-xl transition-all hover:scale-110 border-2"
-                  style={{ backgroundColor: c, borderColor: settings.themeColor === c ? 'white' : 'transparent' }}
-                />
-              ))}
+            <div className="p-6 bg-zinc-950 rounded-[2.5rem] border border-zinc-900 space-y-4">
+               <div className="flex items-center gap-2 mb-2">
+                 <Palette size={12} className="text-zinc-600" />
+                 <span className="text-[9px] font-black uppercase text-zinc-600 tracking-widest">Espectro_OLED</span>
+               </div>
+               <div className="grid grid-cols-5 gap-3">
+                {oledColors.map((c) => (
+                  <button 
+                    key={c} 
+                    onClick={() => updateSettings({ themeColor: c })}
+                    className="h-8 w-8 rounded-full transition-transform hover:scale-125 border-2"
+                    style={{ backgroundColor: c, borderColor: settings.themeColor === c ? 'white' : 'transparent' }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* COLUMNA 3: SUGERENCIAS Y ACCIÓN FINAL */}
-        <section className="space-y-10 flex flex-col justify-between text-left">
-          <div className="space-y-4">
-            <span className="text-[#00FBFF] uppercase text-[11px] font-black tracking-[0.4em] block border-b border-[#00FBFF]/20 pb-2">5. Sugerencias_Trend_AI</span>
-            <div className="space-y-2">
-              {trends.map((phrase, i) => (
-                <button 
-                  key={i}
-                  onClick={() => updateSettings({ currentTopic: phrase })}
-                  className="w-full p-5 bg-zinc-950 border border-zinc-800 rounded-2xl text-left hover:border-[#00FBFF] transition-all group"
-                >
-                  <p className="text-[11px] font-black text-[#00FBFF] group-hover:text-white transition-colors italic leading-tight">
-                    "{phrase}"
-                  </p>
-                </button>
-              ))}
-            </div>
+        {/* COLUMNA 3: TRENDS Y ACCIÓN */}
+        <section className="lg:col-span-4 flex flex-col gap-8">
+          <div className="flex items-center gap-4 border-l-4 border-[#00FBFF] pl-4">
+            <h2 className="text-[#00FBFF] uppercase text-[10px] font-black tracking-[0.4em]">03_Telemetría_Trend</h2>
+          </div>
+          
+          <div className="bg-zinc-950/50 rounded-[3rem] p-6 border border-zinc-900 flex-1 space-y-3 overflow-hidden">
+            {trends.map((phrase, i) => (
+              <motion.button 
+                whileHover={{ x: 5 }}
+                key={i}
+                onClick={() => updateSettings({ currentTopic: phrase })}
+                className="w-full p-4 bg-black border border-zinc-900 rounded-2xl text-left hover:border-[#00FBFF]/40 transition-all group"
+              >
+                <p className="text-[10px] font-black text-zinc-600 group-hover:text-white transition-colors uppercase">
+                   {phrase}
+                </p>
+              </motion.button>
+            ))}
           </div>
 
-          <div className="space-y-6">
-            <div className="relative group">
-               <label className="absolute -top-2 left-4 bg-black px-2 text-[#00FBFF] text-[9px] font-black uppercase tracking-widest z-20">Contexto_Sesión</label>
-               <input 
-                type="text" 
-                placeholder="EJ. ENTREVISTA O NEGOCIOS" 
-                value={settings.currentTopic || ''}
-                className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-2xl p-6 text-xs font-black uppercase tracking-widest outline-none focus:border-[#00FBFF] text-[#00FBFF] transition-all placeholder:text-[#00FBFF]/20"
-                onChange={(e) => updateSettings({ currentTopic: e.target.value })}
-              />
-            </div>
-            
-            <button 
-              onClick={handleStartSession}
-              className="w-full py-10 mb-8 bg-[#39FF14] text-black rounded-3xl font-[1000] uppercase tracking-[0.4em] text-[13px] flex items-center justify-center gap-4 hover:scale-[1.02] transition-all shadow-[0_10px_50px_rgba(57,255,20,0.3)] active:scale-95"
-            >
-              Iniciar_Sincronización <ChevronRight size={20} />
-            </button>
-          </div>
+          <button 
+            onClick={handleStartSession}
+            disabled={!settings.userAlias}
+            className="w-full py-10 bg-[#39FF14] text-black rounded-[2.5rem] font-[1000] uppercase tracking-[0.4em] text-sm flex items-center justify-center gap-4 shadow-[0_20px_50px_rgba(57,255,20,0.15)] active:scale-95 transition-all disabled:opacity-20 disabled:grayscale"
+          >
+            Inicializar_Inmersión <ChevronRight size={20} strokeWidth={3} />
+          </button>
         </section>
       </main>
 
-      <footer className="mt-auto pt-6 border-t border-[#00FBFF]/20 flex flex-col md:flex-row justify-between items-center opacity-40 gap-4 pb-10">
-        <span className="text-[8px] font-black uppercase tracking-[1em] text-[#00FBFF]">Mencional_v2.6 // AI_ENGINE_PROD</span>
-        <div className="flex gap-6 text-[8px] font-black uppercase tracking-widest text-[#00FBFF]">
-            <span className="flex items-center gap-1"><Activity size={8}/> Latencia: 14ms</span>
-            <span>Nodo: Maestro_Activo</span>
+      <footer className="mt-auto border-t border-zinc-900 pt-8 flex justify-between items-center opacity-30">
+        <div className="flex items-center gap-3">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#39FF14] animate-pulse" />
+          <span className="text-[8px] font-black uppercase tracking-[1em] text-[#00FBFF]">Mencional_System_v2.6</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={10} className="text-[#39FF14]" />
+          <span className="text-[8px] font-black uppercase text-zinc-500 tracking-widest">
+            {settings.role === 'admin' ? 'MASTER_ACCESS_GRANTEED' : 'OPERATOR_MODE'}
+          </span>
         </div>
       </footer>
     </div>

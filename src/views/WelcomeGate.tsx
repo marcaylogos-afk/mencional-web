@@ -1,22 +1,21 @@
-/** 🚪 MENCIONAL | WELCOME_GATE v2.6.PROD 
- * ✅ FIX: Importación de useSettings corregida.
- * ✅ FIX: Scroll vertical liberado y eliminación de justify-center.
+/** 🚪 MENCIONAL | WELCOME_GATE v2.6.PROD
+ * ✅ FIX: Almacenamiento de GUEST_KEY en SettingsContext.
+ * ✅ DIRECTORIO AI: Sincronizado a /src/services/ai/
+ * ✅ NAVEGACIÓN: Bypass para Nodo Maestro activo y Bloqueo de Acceso Libre.
  */
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Activity, ShieldAlert, Key, Zap } from 'lucide-react';
+import { ChevronRight, Activity, ShieldAlert, Key } from 'lucide-react';
 
-// 🟢 CORRECCIÓN DE IMPORTACIONES (Sincronizado con tus otros servicios)
 import speechService from '../services/ai/speechService'; 
-import { useSettings } from '../context/SettingsContext'; // Asegúrate que sea exportación nombrada
+import { useSettings } from '../context/SettingsContext';
 import { logger } from '../utils/logger';
 
 const WelcomeGate: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { settings, updateSettings } = useSettings(); 
-  
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
@@ -24,81 +23,73 @@ const WelcomeGate: React.FC = () => {
   
   const isNavigating = useRef(false);
 
-  // Llave maestra centralizada
-  const MASTER_KEY = (import.meta.env.VITE_APP_PASSWORD || "osos").toLowerCase().trim();
-  
-  // Sal de sesión única
+  // 🔑 Llave dinámica de 4 dígitos para Clase Muestra
   const guestKey = useMemo(() => Math.floor(1000 + Math.random() * 9000).toString(), []);
 
-  /** 🔄 Sincronización de Motores de Voz */
+  /** ⚡ SINCRONIZACIÓN DE HARDWARE AI */
   const syncHardware = async () => {
     logger.info("ENGINE", "Sincronizando Hardware AI...");
     try {
-      await speechService.speak("Sistema Mencional sincronizado.", { lang: 'es-MX' }); 
+      await speechService.speak("Sistema Mencional listo.", 'es-MX'); 
       setIsSynced(true);
     } catch (err) {
       setIsSynced(true); 
     }
   };
 
-  /** 🛡️ Guardián de Redirección Automática */
+  /** ⚡ BYPASS NODO MAESTRO
+   * Si el sistema ya reconoce el rol de admin o pago activo, saltamos al selector.
+   */
   useEffect(() => {
-    if (isNavigating.current) return;
-    
-    const isAdmin = settings?.role === 'admin';
-    const isPaidActive = settings?.isPaid === true && (settings?.sessionTimeLeft > 0 || settings?.isUnlimited);
-    
-    if ((isAdmin || isPaidActive) && location.pathname === '/') {
+    const hasAccess = settings?.role === 'admin' || settings?.isPaid === true;
+    if (hasAccess && location.pathname === '/' && !isNavigating.current) {
       isNavigating.current = true;
+      logger.info("NAV", "Acceso autorizado detectado. Redirigiendo a Selector.");
       navigate('/selector', { replace: true });
     }
-  }, [settings, navigate, location.pathname]);
+  }, [settings.role, settings.isPaid, navigate, location.pathname]);
 
-  /** 🔑 Procesador de Acceso Neural */
   const handleAccessSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const inputKey = password.toLowerCase().trim();
-    
-    // Tokens de cortesía y bypass
-    const GUEST_TOKENS = ['mencional30', 'trial_presencial', 'pago_cash', guestKey];
+    const masterKey = "osos"; //
 
-    if (inputKey === MASTER_KEY) {
-      isNavigating.current = true;
+    if (inputKey === masterKey) {
+      // PERFIL: ADMINISTRADOR (Acceso Total e Ilimitado)
       await updateSettings({ 
-        userAlias: 'Admin', 
         role: 'admin', 
         isUnlimited: true, 
-        isPaid: true, 
-        themeColor: '#00FBFF' 
-      });
-      navigate('/selector', { replace: true }); 
-    } 
-    else if (GUEST_TOKENS.includes(inputKey)) {
-      isNavigating.current = true;
-      await updateSettings({ 
-        userAlias: `User_${inputKey}`, 
-        role: 'participant', 
-        isPaid: true, 
-        isUnlimited: false, 
-        sessionTimeLeft: 1800, // 30 minutos
+        isPaid: true,
+        userAlias: 'NODO_MAESTRO',
         themeColor: '#39FF14' 
       });
-      navigate('/selector', { replace: true });
+      logger.info("AUTH", "Acceso Maestro concedido.");
+      navigate('/selector'); 
+    } 
+    else if (inputKey === guestKey) {
+      // PERFIL: CLASE MUESTRA (Acceso de Cortesía Temporal)
+      await updateSettings({ 
+        role: 'guest', 
+        isPaid: true,
+        isUnlimited: false, 
+        userAlias: `INVITADO_${guestKey}`,
+        themeColor: '#00FBFF' 
+      });
+      logger.info("AUTH", "Acceso de Cortesía concedido.");
+      navigate('/selector');
     }
     else {
       setError(true);
+      speechService.speak("Acceso denegado.", 'es-MX').catch(() => {});
       setTimeout(() => setError(false), 1500);
       setPassword("");
-      speechService.speak("Llave inválida.", { lang: 'es-MX' });
     }
   };
 
   return (
-    <div className="min-h-[100dvh] w-full bg-[#000000] text-white flex flex-col items-center pt-24 pb-20 px-6 italic select-none overflow-y-auto overflow-x-hidden relative">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 italic select-none font-sans overflow-hidden">
       
-      {/* 🌑 TEXTURA OLED */}
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] opacity-80 z-0" />
-
+      {/* 🟢 INDICADOR DE ESTADO AI */}
       <AnimatePresence>
         {!isSynced && (
           <motion.button
@@ -106,93 +97,96 @@ const WelcomeGate: React.FC = () => {
             animate={{ opacity: 1, y: 0 }} 
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={syncHardware}
-            className="fixed top-10 flex items-center gap-3 px-8 py-3 border border-[#00FBFF]/20 rounded-full text-[9px] font-black text-[#00FBFF] uppercase tracking-[0.4em] bg-black/60 backdrop-blur-xl z-50"
+            className="fixed top-12 flex items-center gap-2 px-8 py-3 border border-[#00FBFF]/40 rounded-full text-[9px] font-black text-[#00FBFF] uppercase tracking-[0.4em] bg-black/80 backdrop-blur-xl z-50"
           >
             <Activity size={12} className="animate-pulse" />
-            Inicializar_Nodo_v2026
+            Inicializar_Nodo_V2.6
           </motion.button>
         )}
       </AnimatePresence>
 
-      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="mb-14 z-10">
-        <div className="px-6 py-2 border border-zinc-900 rounded-lg text-[9px] text-zinc-700 font-black tracking-[0.5em] uppercase">
-          Neural_Vault_v2.6
-        </div>
+      {/* 🛸 LOGO CENTRAL */}
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="mb-10">
+        <img src="/logo.png" alt="Mencional" className="w-40 h-auto drop-shadow-[0_0_25px_rgba(0,251,255,0.15)]" />
       </motion.div>
 
-      <div className="w-full max-w-sm space-y-12 text-center z-10 flex flex-col items-center">
-        <header className="space-y-2">
-          <h1 className="text-7xl font-[1000] uppercase tracking-tighter italic leading-none">
+      <div className="w-full max-w-sm space-y-10 text-center z-10">
+        <header className="space-y-1">
+          <h1 className="text-5xl font-[1000] uppercase tracking-tighter italic leading-none">
             Mencional<span className="text-[#00FBFF]">.</span>
           </h1>
-          <p className="text-[8px] text-zinc-800 uppercase tracking-[1.1em] font-black pl-[1.1em]">
-            Immersion_Protocol
-          </p>
+          <p className="text-[7px] text-zinc-700 uppercase tracking-[1.2em] font-black">Neural_Immersion_Vault</p>
         </header>
 
         <AnimatePresence mode="wait">
           {isAdminMode ? (
             <motion.form 
               key="auth-form" 
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} 
+              initial={{ opacity: 0, x: 20 }} 
+              animate={{ opacity: 1, x: 0 }} 
               onSubmit={handleAccessSubmit} 
-              className="w-full space-y-4"
+              className="space-y-4"
             >
               <div className="relative">
                 <input 
                   type="password" 
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`w-full bg-zinc-950 border-2 ${error ? 'border-red-600 text-red-600' : 'border-zinc-900 text-[#39FF14]'} p-6 rounded-[2.5rem] text-sm text-center uppercase outline-none focus:border-[#39FF14] transition-all font-black tracking-[0.3em]`}
-                  placeholder="LLAVE_DE_ACCESO" 
+                  className={`w-full bg-zinc-950 border-2 ${error ? 'border-red-600' : 'border-zinc-900'} p-6 rounded-[30px] text-sm text-[#39FF14] text-center uppercase outline-none focus:border-[#39FF14] transition-all font-black tracking-widest`}
+                  placeholder="INTRODUCIR_LLAVE" 
                   autoFocus
                 />
-                {error && <ShieldAlert className="absolute right-6 top-6 text-red-600 animate-bounce" size={20} />}
+                {error && <ShieldAlert className="absolute right-6 top-6 text-red-600" size={20} />}
               </div>
-              <button className="w-full py-6 bg-[#39FF14] text-black font-[1000] rounded-[2.5rem] uppercase italic text-[11px] tracking-widest active:scale-95 transition-transform">
-                Validar_Protocolo
+              <button className="w-full py-6 bg-[#39FF14] text-black font-[1000] rounded-[30px] uppercase italic text-[10px] tracking-widest hover:scale-[1.02] transition-all">
+                Verificar_Credenciales
               </button>
               <button 
                 type="button" 
                 onClick={() => setIsAdminMode(false)} 
-                className="text-[8px] text-zinc-700 uppercase tracking-widest pt-6 font-black"
+                className="text-[8px] text-zinc-700 uppercase tracking-widest pt-4 hover:text-white transition-colors font-bold"
               >
-                ⟨ Volver_al_Inicio
+                ⟨ Regresar al Inicio
               </button>
             </motion.form>
           ) : (
-            <motion.div key="main-actions" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full space-y-6">
+            <motion.div key="main-actions" className="space-y-6">
+              {/* 💳 BOTÓN DE PAGO: Único acceso para alumnos ($90 MXN) */}
               <button 
-                onClick={() => window.location.href = "https://mpago.la/1isA1oL"} // URL de pago $50
-                className="w-full py-8 bg-white text-black font-[1000] rounded-[3rem] flex items-center justify-center gap-4 uppercase italic text-sm tracking-tight hover:bg-[#00FBFF] transition-all"
+                onClick={() => {
+                  logger.info("PAYMENT", "Redirigiendo a Pasarela Mercado Pago.");
+                  window.location.href = "https://mpago.la/1HJRXhD"; 
+                }}
+                className="w-full py-8 bg-white text-black font-[1000] rounded-[40px] flex items-center justify-center gap-3 uppercase italic text-sm tracking-tight hover:bg-[#00FBFF] transition-all shadow-[0_0_40px_rgba(255,255,255,0.05)]"
               >
-                Adquirir_Sesión_PRO <Zap size={18} fill="currentColor" />
+                Adquirir_Sesión_PRO <ChevronRight size={18} />
               </button>
               
-              <button 
-                onClick={() => setIsAdminMode(true)} 
-                className="group flex flex-col items-center gap-4 mx-auto pt-8"
-              >
-                <div className="flex items-center gap-3 opacity-20 group-hover:opacity-100 transition-opacity">
-                   <Key size={12} className="text-zinc-500 group-hover:text-[#39FF14]" />
-                   <span className="text-[9px] text-zinc-600 uppercase tracking-[0.4em] font-black group-hover:text-[#39FF14]">
-                     Tengo_una_Llave
+              {/* 🔑 ACCESO PROTEGIDO */}
+              <button onClick={() => setIsAdminMode(true)} className="group flex flex-col items-center gap-4 mx-auto pt-4">
+                <div className="flex items-center gap-2 opacity-30 group-hover:opacity-100 transition-opacity">
+                   <Key size={10} className="text-zinc-500 group-hover:text-[#39FF14]" />
+                   <span className="text-[8px] text-zinc-600 uppercase tracking-[0.5em] font-black group-hover:text-[#39FF14]">
+                     Llave_de_Acceso
                    </span>
                 </div>
-                <div className="w-10 h-[1px] bg-zinc-900 group-hover:bg-[#39FF14] group-hover:w-20 transition-all duration-500" />
+                <div className="w-8 h-[1px] bg-zinc-900 group-hover:bg-[#39FF14] transition-all" />
               </button>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      <footer className="mt-auto opacity-30 text-[7px] text-zinc-700 font-black uppercase tracking-[1em] flex flex-col items-center gap-3 pb-6">
-        <span>Mencional_v2.6_System</span>
-        <div className="flex items-center gap-4 text-zinc-800 tracking-normal font-mono">
-           <span>NODE_SALT: <span className="text-[#39FF14]">{guestKey}</span></span>
-           <span>SESSION: 30M / $50 MXN</span>
-        </div>
+      {/* 🔐 IDENTIFICADOR DE SESIÓN (Casi invisible, útil para soporte) */}
+      <footer className="fixed bottom-8 opacity-10 text-[6px] text-zinc-600 font-black uppercase tracking-[1em] hover:opacity-100 transition-opacity duration-1000 cursor-default flex flex-col items-center gap-2">
+        <span>Mencional_System_v2.6_PROD</span>
+        <span className="text-zinc-800 tracking-normal font-mono">
+            SESSION_SALT: <span className="text-[#39FF14]">{guestKey}</span>
+        </span>
       </footer>
+
+      {/* 🌑 CAPA OLED */}
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] opacity-60 z-0" />
     </div>
   );
 };
