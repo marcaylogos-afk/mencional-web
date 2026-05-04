@@ -2,7 +2,6 @@
  * ✅ SOPORTE: Dual Mode (Ultra Interpreter / Learning Mode)
  * ✅ AUDIO: Doble Impacto Auditivo (x2) | 1.0x -> 0.85x
  * ✅ CONTROL: Sincronización de ciclos Micro-Repetición
- * ✅ MOD: Espera extendida de 7s para traducción
  */
 
 class SpeechService {
@@ -10,10 +9,6 @@ class SpeechService {
   private listeners: { [key: string]: Function[] } = {};
   private isListening: boolean = false;
   private isSpeaking: boolean = false;
-  
-  // ⏳ Timer para controlar la espera de 7 segundos
-  private silenceTimer: any = null;
-  private accumulatedTranscript: string = "";
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -31,7 +26,7 @@ class SpeechService {
           this.isListening = false;
           this.emit('status', 'idle');
         };
-        this.onerror = (event: any) => {
+        this.recognition.onerror = (event: any) => {
           console.error("%c 🔴 [AOEDE_ERROR]:", "color: #FF0055", event.error);
           this.isListening = false;
         };
@@ -39,51 +34,33 @@ class SpeechService {
     }
   }
 
-  /** 🎤 ESCUCHA ACTIVA CON ESPERA DE 7s */
+  /** 🎤 ESCUCHA ACTIVA (Ventana de 5s gestionada por UI) */
   public async start(lang: string = 'es-MX') {
     if (!this.recognition) return false;
     
+    // Si estamos hablando, no permitimos que el micro se abra para evitar feedback
     if (this.isSpeaking) return false;
 
+    // Si ya está escuchando, hacemos un reset limpio
     if (this.isListening) {
       this.stop();
       await new Promise(r => setTimeout(r, 150));
     }
 
-    this.accumulatedTranscript = ""; // Reset de la frase acumulada
     this.recognition.lang = lang;
-
     this.recognition.onresult = (event: any) => {
       let interim = "";
-      
-      // Limpiamos el timer cada vez que el usuario vuelve a hablar
-      if (this.silenceTimer) clearTimeout(this.silenceTimer);
-
+      let final = "";
       for (let i = event.resultIndex; i < event.results.length; ++i) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          this.accumulatedTranscript += " " + transcript;
-        } else {
-          interim += transcript;
-        }
+        if (event.results[i].isFinal) final += event.results[i][0].transcript;
+        else interim += event.results[i][0].transcript;
       }
       
       if (interim) this.emit('partial_result', interim);
-
-      // ⏱️ Inicia la cuenta regresiva de 7 segundos tras detectar silencio
-      this.silenceTimer = setTimeout(() => {
-        const finalPhrase = (this.accumulatedTranscript + " " + interim).trim();
-        
-        if (finalPhrase) {
-          console.log("%c 🟢 [AOEDE_DATA]: (Enviando tras 7s)", "color: #00FBFF", finalPhrase);
-          this.emit('final_result', { transcription: finalPhrase });
-          
-          // Limpiamos para la siguiente oración
-          this.accumulatedTranscript = "";
-          // Opcional: Detener tras traducir si así lo requiere tu flujo
-          // this.stop(); 
-        }
-      }, 7000); // <--- Los 7000ms que solicitaste
+      if (final) {
+        console.log("%c 🟢 [AOEDE_DATA]:", "color: #00FBFF", final.trim());
+        this.emit('final_result', { transcription: final.trim() });
+      }
     };
 
     try {
@@ -94,11 +71,14 @@ class SpeechService {
     }
   }
 
+  /** 🗣️ PROTOCOLO AOEDE: DOBLE IMPACTO (x2)
+   * Este método es asíncrono y "bloquea" el flujo hasta que termina la repetición.
+   */
   public async speakLearning(text: string, lang: string) {
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
     
     this.isSpeaking = true;
-    this.stop(); 
+    this.stop(); // 🛑 Detenemos el micro de inmediato antes de hablar
     window.speechSynthesis.cancel();
 
     const voices = window.speechSynthesis.getVoices();
@@ -119,19 +99,26 @@ class SpeechService {
     };
 
     try {
+      // 1ª Pasada: Impacto Natural (1.0x)
       await playUtterance(1.0);
+      
+      // Pausa de Absorción Táctica (700ms)
       await new Promise(r => setTimeout(r, 700));
+
+      // 2ª Pasada: Fijación Fonética (0.85x)
       await playUtterance(0.85);
     } finally {
       this.isSpeaking = false;
+      // Emitimos evento para avisar a la UI que ya puede re-encender el radar
       this.emit('speaking_finished', true);
     }
   }
 
+  /** 🛑 DETENCIÓN DE GOLPE (Hardware Release) */
   public stop() {
-    if (this.silenceTimer) clearTimeout(this.silenceTimer);
     if (this.recognition) {
       try {
+        // .abort() es crucial para que el micro se apague AL INSTANTE
         this.recognition.abort(); 
         this.isListening = false;
       } catch (e) {}
@@ -146,6 +133,7 @@ class SpeechService {
     }
   }
 
+  /** 🔌 SISTEMA DE EVENTOS */
   public on(event: string, cb: Function) {
     if (!this.listeners[event]) this.listeners[event] = [];
     this.listeners[event].push(cb);

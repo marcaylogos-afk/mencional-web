@@ -110,7 +110,7 @@ const LearningMode: React.FC = () => {
     
     speechService.start(settings?.nativeLanguage || 'es-MX');
 
-    const duration = 7000; 
+  const duration = 6000; // 6 Segundos
     const step = 50;
     
     if (timerRef.current) clearInterval(timerRef.current);
