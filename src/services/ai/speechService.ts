@@ -1,7 +1,8 @@
 /** 🔊 MOTOR MENCIONAL: SPEECH SERVICE v2026.PROD 
  * ✅ SOPORTE: Dual Mode (Ultra Interpreter / Learning Mode)
- * ✅ AUDIO: Doble Impacto Auditivo (x2) | 1.0x -> 0.85x
- * ✅ CONTROL: Sincronización de ciclos Micro-Repetición
+ * ✅ AUDIO: Doble Impacto Auditivo Aoede (1.0x -> 0.85x)
+ * ✅ DETECCIÓN: Lógica Bilingüe Dinámica (Target <-> Native)
+ * ✅ UBICACIÓN: /src/services/ai/speechService.ts
  */
 
 class SpeechService {
@@ -22,32 +23,40 @@ class SpeechService {
           this.isListening = true;
           this.emit('status', 'listening');
         };
+
         this.recognition.onend = () => { 
           this.isListening = false;
           this.emit('status', 'idle');
+          this.emit('mic_closed', true);
         };
+
         this.recognition.onerror = (event: any) => {
-          console.error("%c 🔴 [AOEDE_ERROR]:", "color: #FF0055", event.error);
+          if (event.error !== 'no-speech') {
+            console.error("%c 🔴 [AOEDE_ERROR]:", "color: #FF0055", event.error);
+            this.emit('error', event.error);
+          }
           this.isListening = false;
         };
       }
     }
   }
 
-  /** 🎤 ESCUCHA ACTIVA (Ventana de 5s gestionada por UI) */
+  /** 🎤 ESCUCHA ACTIVA (Captación Neural Bilingüe) 
+   * @param lang El idioma en el que el motor intentará reconocer la voz.
+  */
   public async start(lang: string = 'es-MX') {
     if (!this.recognition) return false;
     
-    // Si estamos hablando, no permitimos que el micro se abra para evitar feedback
     if (this.isSpeaking) return false;
 
-    // Si ya está escuchando, hacemos un reset limpio
     if (this.isListening) {
       this.stop();
       await new Promise(r => setTimeout(r, 150));
     }
 
+    // Seteamos el idioma capturado desde la configuración (ej. 'it-IT' o 'es-MX')
     this.recognition.lang = lang;
+
     this.recognition.onresult = (event: any) => {
       let interim = "";
       let final = "";
@@ -58,8 +67,13 @@ class SpeechService {
       
       if (interim) this.emit('partial_result', interim);
       if (final) {
-        console.log("%c 🟢 [AOEDE_DATA]:", "color: #00FBFF", final.trim());
-        this.emit('final_result', { transcription: final.trim() });
+        console.log(`%c 🟢 [AOEDE_DETECTED (${lang})]:`, "color: #00FBFF", final.trim());
+        
+        // Enviamos el texto y el idioma en el que se detectó para que el traductor sepa qué hacer
+        this.emit('final_result', { 
+          transcription: final.trim(),
+          detectedLang: lang 
+        });
       }
     };
 
@@ -71,24 +85,27 @@ class SpeechService {
     }
   }
 
-  /** 🗣️ PROTOCOLO AOEDE: DOBLE IMPACTO (x2)
-   * Este método es asíncrono y "bloquea" el flujo hasta que termina la repetición.
-   */
+  /** 🗣️ PROTOCOLO AOEDE: DOBLE IMPACTO (x2) */
   public async speakLearning(text: string, lang: string) {
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
     
     this.isSpeaking = true;
-    this.stop(); // 🛑 Detenemos el micro de inmediato antes de hablar
+    this.stop(); 
     window.speechSynthesis.cancel();
 
     const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(v => v.lang.includes(lang) && (v.name.includes("Google") || v.name.includes("Natural")));
+    // Buscamos una voz que coincida con el idioma de destino (ej. Italiano)
+    const preferredVoice = voices.find(v => 
+      v.lang.includes(lang) && 
+      (v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("Neural"))
+    );
 
-    const playUtterance = (rate: number) => {
+    const playUtterance = (rate: number, volume: number = 1.0) => {
       return new Promise((resolve) => {
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = lang;
         utterance.rate = rate; 
+        utterance.volume = volume;
         if (preferredVoice) utterance.voice = preferredVoice;
 
         utterance.onend = () => resolve(true);
@@ -99,26 +116,18 @@ class SpeechService {
     };
 
     try {
-      // 1ª Pasada: Impacto Natural (1.0x)
       await playUtterance(1.0);
-      
-      // Pausa de Absorción Táctica (700ms)
-      await new Promise(r => setTimeout(r, 700));
-
-      // 2ª Pasada: Fijación Fonética (0.85x)
-      await playUtterance(0.85);
+      await new Promise(r => setTimeout(r, 750));
+      await playUtterance(0.85, 0.9); 
     } finally {
       this.isSpeaking = false;
-      // Emitimos evento para avisar a la UI que ya puede re-encender el radar
       this.emit('speaking_finished', true);
     }
   }
 
-  /** 🛑 DETENCIÓN DE GOLPE (Hardware Release) */
   public stop() {
     if (this.recognition) {
       try {
-        // .abort() es crucial para que el micro se apague AL INSTANTE
         this.recognition.abort(); 
         this.isListening = false;
       } catch (e) {}
@@ -133,7 +142,6 @@ class SpeechService {
     }
   }
 
-  /** 🔌 SISTEMA DE EVENTOS */
   public on(event: string, cb: Function) {
     if (!this.listeners[event]) this.listeners[event] = [];
     this.listeners[event].push(cb);
